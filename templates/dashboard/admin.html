@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Admin dashboard | SIWES360{% endblock %}
+{% block content %}
+<section class="dashboard-placeholder">
+    <p class="eyebrow">Admin dashboard</p>
+    <h1>Welcome, {{ session.get('name') }}.</h1>
+    <p>This is your protected admin space. Administration and system management tools will be added in later weeks.</p>
+</section>
+{% endblock %}

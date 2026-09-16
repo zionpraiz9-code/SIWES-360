@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}SIWES360{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="site-header">
+        <nav class="navbar" aria-label="Main navigation">
+            <a class="brand" href="{{ url_for('dashboard.dashboard_router') if session.get('user_id') else url_for('auth.login') }}">SIWES360</a>
+            <div class="nav-links">
+                {% if session.get('user_id') %}
+                    <span class="user-summary">{{ session.get('name') }} <span class="role-badge">{{ session.get('role')|replace('_', ' ')|title }}</span></span>
+                    <a href="{{ url_for('dashboard.dashboard_router') }}">Dashboard</a>
+                    <a href="{{ url_for('auth.logout') }}">Log out</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}">Log in</a>
+                    <a class="button button-small" href="{{ url_for('auth.register') }}">Register</a>
+                {% endif %}
+            </div>
+        </nav>
+    </header>
+
+    <main class="page-shell">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-stack" aria-live="polite">
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Register | SIWES360{% endblock %}
+{% block content %}
+<section class="form-card">
+    <p class="eyebrow">Week 5 · Identity</p>
+    <h1>Create your account</h1>
+    <p class="muted">Set up your SIWES360 identity to access your role-specific workspace.</p>
+    <form method="post" novalidate>
+        <label for="name">Full name</label>
+        <input id="name" name="name" type="text" value="{{ request.form.get('name', '') }}" required autofocus>
+
+        <label for="email">Email address</label>
+        <input id="email" name="email" type="email" value="{{ request.form.get('email', '') }}" required>
+
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" required>
+
+        <label for="confirm_password">Confirm password</label>
+        <input id="confirm_password" name="confirm_password" type="password" required>
+
+        <label for="role">Role</label>
+        <select id="role" name="role" required>
+            <option value="">Choose a role</option>
+            {% for role in roles %}
+                <option value="{{ role }}" {% if request.form.get('role') == role %}selected{% endif %}>{{ role|replace('_', ' ')|title }}</option>
+            {% endfor %}
+        </select>
+
+        <button class="button" type="submit">Create account</button>
+    </form>
+    <p class="form-footer">Already registered? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+</section>
+{% endblock %}
