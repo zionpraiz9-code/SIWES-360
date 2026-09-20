@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block title %}Skills | SIWES360{% endblock %}
+{% block content %}
+<section class="content-panel"><p class="eyebrow">Student portal</p><h1>Skills</h1><form method="post" class="inline-form"><label for="name">Skill</label><input id="name" name="name" placeholder="e.g. Flask" required><button class="button" type="submit">Add skill</button></form><div class="tag-list">{% for skill in skills %}<div class="skill-tag"><span>{{ skill.name }}</span><form method="post" action="{{ url_for('dashboard.skill_delete', skill_id=skill.id) }}"><button class="text-button" type="submit" aria-label="Remove {{ skill.name }}">Remove</button></form></div>{% else %}<p class="muted">No skills recorded yet.</p>{% endfor %}</div></section>
+{% endblock %}

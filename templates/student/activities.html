@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Activities | SIWES360{% endblock %}
+{% block content %}
+<section class="content-panel"><div class="panel-heading"><div><p class="eyebrow">Student portal</p><h1>Daily activities</h1></div><a class="button" href="{{ url_for('dashboard.activity_new') }}">Add activity</a></div>
+<div class="record-list">{% for activity in activities %}<article class="record-row"><div><strong>{{ activity.title }}</strong><span>{{ activity.date.strftime('%d %b %Y') }}</span></div><a href="{{ url_for('dashboard.activity_detail', activity_id=activity.id) }}">View</a></article>{% else %}<p class="muted">No activities logged yet.</p>{% endfor %}</div></section>
+{% endblock %}

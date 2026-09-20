@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Attendance | SIWES360{% endblock %}
+{% block content %}
+<section class="content-panel"><p class="eyebrow">Student portal</p><h1>Attendance</h1>
+<form method="post" class="inline-form"><label for="date">Date</label><input id="date" name="date" type="date" value="{{ today.isoformat() }}" required><label for="status">Status</label><select id="status" name="status" required><option value="Present">Present</option><option value="Absent">Absent</option></select><button class="button" type="submit">Record attendance</button></form>
+<h2>Attendance history</h2><div class="record-list">{% for record in records %}<article class="record-row"><span>{{ record.date.strftime('%d %b %Y') }}</span><strong class="status-{{ record.status|lower }}">{{ record.status }}</strong></article>{% else %}<p class="muted">No attendance records yet.</p>{% endfor %}</div></section>
+{% endblock %}

@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block title %}Weekly Reports | SIWES360{% endblock %}
+{% block content %}
+<section class="content-panel"><div class="panel-heading"><div><p class="eyebrow">Student portal</p><h1>Weekly reports</h1></div><a class="button" href="{{ url_for('dashboard.report_new') }}">New report</a></div><div class="record-list">{% for report in reports %}<article class="record-row"><div><strong>Week {{ report.week_number }}</strong><span>{{ report.start_date.strftime('%d %b') }} to {{ report.end_date.strftime('%d %b %Y') }}</span></div><span class="status-badge">{{ report.status }}</span><a href="{{ url_for('dashboard.report_detail', report_id=report.id) }}">View</a></article>{% else %}<p class="muted">No weekly reports yet.</p>{% endfor %}</div></section>
+{% endblock %}

@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block title %}Student Profile | SIWES360{% endblock %}
+{% block content %}
+<section class="form-card"><p class="eyebrow">Student portal</p><h1>Student profile</h1><p class="muted">Add the placement details used by your dashboard.</p><form method="post"><label for="organization">Organization</label><input id="organization" name="organization" value="{{ profile.organization or '' }}" placeholder="e.g. Acme Technologies"><label for="siwes_start_date">SIWES start date</label><input id="siwes_start_date" name="siwes_start_date" type="date" value="{{ profile.siwes_start_date.isoformat() if profile.siwes_start_date else '' }}"><label for="siwes_end_date">SIWES end date</label><input id="siwes_end_date" name="siwes_end_date" type="date" value="{{ profile.siwes_end_date.isoformat() if profile.siwes_end_date else '' }}"><button class="button" type="submit">Save profile</button></form></section>
+{% endblock %}

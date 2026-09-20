@@ -1,9 +1,45 @@
 {% extends "base.html" %}
-{% block title %}Student dashboard | SIWES360{% endblock %}
+{% block title %}Student Dashboard | SIWES360{% endblock %}
 {% block content %}
-<section class="dashboard-placeholder">
-    <p class="eyebrow">Student dashboard</p>
-    <h1>Welcome, {{ session.get('name') }}.</h1>
-    <p>This is your protected student space. Student tools and SIWES workflow content will be added in later weeks.</p>
+<section class="student-dashboard">
+    <div class="dashboard-heading">
+        <div>
+            <p class="eyebrow">Student portal</p>
+            <h1>Welcome, {{ user.name }}</h1>
+            <p class="muted">Keep your SIWES records current from one place.</p>
+        </div>
+        <nav class="student-nav" aria-label="Student navigation">
+            <a href="{{ url_for('dashboard.student_dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('dashboard.student_profile') }}">Profile</a>
+            <a href="{{ url_for('dashboard.attendance_page') }}">Attendance</a>
+            <a href="{{ url_for('dashboard.activities') }}">Activities</a>
+            <a href="{{ url_for('dashboard.skills') }}">Skills</a>
+            <a href="{{ url_for('dashboard.reports') }}">Reports</a>
+        </nav>
+    </div>
+
+    <section class="dashboard-panel placement-panel">
+        <div>
+            <p class="eyebrow">Placement</p>
+            <h2>{{ dashboard_data.organization }}</h2>
+            {% if profile.siwes_start_date and profile.siwes_end_date %}
+                <p class="muted">{{ profile.siwes_start_date.strftime('%d %b %Y') }} to {{ profile.siwes_end_date.strftime('%d %b %Y') }}</p>
+            {% else %}
+                <p class="muted">SIWES start and end dates are not set yet.</p>
+            {% endif %}
+        </div>
+        <div class="progress-block">
+            <div class="progress-label"><span>SIWES progress</span><strong>{{ dashboard_data.progress }}%</strong></div>
+            <progress class="progress-track" value="{{ dashboard_data.progress }}" max="100">{{ dashboard_data.progress }}%</progress>
+            <p class="muted">{{ dashboard_data.days_completed }} days completed · {{ dashboard_data.days_remaining }} days remaining</p>
+        </div>
+    </section>
+
+    <section class="dashboard-cards" aria-label="Student records summary">
+        <article class="dashboard-card"><span>Attendance</span><strong>{{ dashboard_data.attendance }}%</strong></article>
+        <article class="dashboard-card"><span>Activities logged</span><strong>{{ dashboard_data.activities }}</strong></article>
+        <article class="dashboard-card"><span>Weekly reports</span><strong>{{ dashboard_data.reports }}</strong></article>
+        <article class="dashboard-card"><span>Skills acquired</span><strong>{{ dashboard_data.skills }}</strong></article>
+    </section>
 </section>
 {% endblock %}

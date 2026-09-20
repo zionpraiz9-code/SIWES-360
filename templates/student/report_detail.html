@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block title %}Week {{ report.week_number }} Report | SIWES360{% endblock %}
+{% block content %}
+<section class="content-panel"><p class="eyebrow">{{ report.status }}</p><h1>Week {{ report.week_number }}</h1><p class="muted">{{ report.start_date.strftime('%d %b %Y') }} to {{ report.end_date.strftime('%d %b %Y') }}</p><h2>Summary</h2><p>{{ report.summary }}</p><h2>Challenges</h2><p>{{ report.challenges or 'None recorded.' }}</p><h2>Skills acquired</h2><p>{{ report.skills_acquired or 'None recorded.' }}</p>{% if report.supervisor_notes %}<h2>Supervisor notes</h2><p>{{ report.supervisor_notes }}</p>{% endif %}<div class="actions">{% if report.status == 'Draft' %}<a class="button" href="{{ url_for('dashboard.report_edit', report_id=report.id) }}">Edit draft</a><form method="post" action="{{ url_for('dashboard.report_submit', report_id=report.id) }}"><button class="button" type="submit">Submit report</button></form>{% endif %}</div></section>
+{% endblock %}

@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block title %}Activity Details | SIWES360{% endblock %}
+{% block content %}
+<section class="content-panel"><p class="eyebrow">{{ activity.date.strftime('%d %b %Y') }}</p><h1>{{ activity.title }}</h1><p>{{ activity.description }}</p><dl class="detail-list"><dt>Skills</dt><dd>{{ activity.skills or 'Not recorded' }}</dd><dt>Tools</dt><dd>{{ activity.tools or 'Not recorded' }}</dd></dl><div class="actions"><a class="button" href="{{ url_for('dashboard.activity_edit', activity_id=activity.id) }}">Edit</a><form method="post" action="{{ url_for('dashboard.activity_delete', activity_id=activity.id) }}" onsubmit="return confirm('Delete this activity?');"><button class="button danger" type="submit">Delete</button></form></div></section>
+{% endblock %}

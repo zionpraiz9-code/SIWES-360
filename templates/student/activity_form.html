@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if activity else 'Add' }} Activity | SIWES360{% endblock %}
+{% block content %}
+<section class="form-card"><p class="eyebrow">Student portal</p><h1>{{ 'Edit' if activity else 'Add' }} activity</h1><form method="post"><label for="date">Date</label><input id="date" name="date" type="date" value="{{ activity.date.isoformat() if activity else '' }}" required><label for="title">Activity</label><input id="title" name="title" value="{{ activity.title if activity else '' }}" required><label for="description">Description</label><textarea id="description" name="description" required>{{ activity.description if activity else '' }}</textarea><label for="skills">Skills used or learned</label><input id="skills" name="skills" value="{{ activity.skills if activity else '' }}"><label for="tools">Tools and technologies</label><input id="tools" name="tools" value="{{ activity.tools if activity else '' }}"><button class="button" type="submit">Save activity</button></form></section>
+{% endblock %}
