@@ -1,5 +1,6 @@
 from datetime import date, datetime
 
+from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from extensions import db
@@ -12,8 +13,14 @@ VALID_ROLES = (
     "admin",
 )
 
+SELF_REGISTERABLE_ROLES = (
+    "student",
+    "industry_supervisor",
+    "university_supervisor",
+)
 
-class User(db.Model):
+
+class User(UserMixin, db.Model):
     __table_args__ = (
         db.CheckConstraint(
             "role IN ('student', 'industry_supervisor', 'university_supervisor', 'admin')",
@@ -23,10 +30,10 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
-    # One email identifies one account, so duplicate registrations are rejected.
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(30), nullable=False)
+    role = db.Column(db.String(30), nullable=False, default="student")
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     skills = db.relationship("Skill", secondary="student_skills", backref="students")
 

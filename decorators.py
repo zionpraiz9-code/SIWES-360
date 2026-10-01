@@ -1,13 +1,14 @@
 from functools import wraps
 
-from flask import flash, redirect, session, url_for
+from flask import abort, flash, redirect, session, url_for
+from flask_login import current_user
 
 
 def login_required(view):
     """Require a signed-in user before allowing the view to run."""
     @wraps(view)
     def wrapped_view(*args, **kwargs):
-        if "user_id" not in session:
+        if not current_user.is_authenticated:
             flash("Please log in to continue.", "error")
             return redirect(url_for("auth.login"))
         return view(*args, **kwargs)
@@ -20,13 +21,13 @@ def role_required(*roles):
     def decorator(view):
         @wraps(view)
         def wrapped_view(*args, **kwargs):
-            if "user_id" not in session:
+            if not current_user.is_authenticated:
                 flash("Please log in to continue.", "error")
                 return redirect(url_for("auth.login"))
 
-            if session.get("role") not in roles:
+            if current_user.role not in roles:
                 flash("You are not authorized to view that dashboard.", "error")
-                return redirect(url_for("dashboard.dashboard_router"))
+                abort(403)
 
             return view(*args, **kwargs)
 

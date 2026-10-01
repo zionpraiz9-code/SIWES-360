@@ -9,10 +9,10 @@
 <body>
     <header class="site-header">
         <nav class="navbar" aria-label="Main navigation">
-            <a class="brand" href="{{ url_for('dashboard.dashboard_router') if session.get('user_id') else url_for('auth.login') }}">SIWES360</a>
+            <a class="brand" href="{{ url_for('dashboard.dashboard_router') if current_user.is_authenticated else url_for('auth.login') }}">SIWES360</a>
             <div class="nav-links">
-                {% if session.get('user_id') %}
-                    <span class="user-summary">{{ session.get('name') }} <span class="role-badge">{{ session.get('role')|replace('_', ' ')|title }}</span></span>
+                {% if current_user.is_authenticated %}
+                    <span class="user-summary">{{ current_user.name }} <span class="role-badge">{{ current_user.role|replace('_', ' ')|title }}</span></span>
                     <a href="{{ url_for('dashboard.dashboard_router') }}">Dashboard</a>
                     <a href="{{ url_for('auth.logout') }}">Log out</a>
                 {% else %}
