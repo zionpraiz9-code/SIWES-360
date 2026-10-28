@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Create an account | SIWES360{% endblock %}
+{% block content %}
+<section class="auth-layout">
+  <div class="auth-intro">
+    <p class="eyebrow">GET STARTED</p>
+    <h1>Take your industrial training journey forward.</h1>
+    <p>Register as a student to get started. Supervisor and administrator accounts are created through a trusted administrative process.</p>
+  </div>
+  <div class="form-card">
+    <h2>Create a student account</h2>
+    <p class="muted">All fields are required.</p>
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="form-field">
+        {{ form.full_name.label }}
+        {{ form.full_name(class_="form-control", autocomplete="name", placeholder="Your full name") }}
+        {% for error in form.full_name.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+      </div>
+      <div class="form-field">
+        {{ form.email.label }}
+        {{ form.email(class_="form-control", autocomplete="email", placeholder="you@example.com") }}
+        {% for error in form.email.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+      </div>
+      <div class="form-field">
+        {{ form.password.label }}
+        {{ form.password(class_="form-control", autocomplete="new-password", placeholder="At least 8 characters") }}
+        {% for error in form.password.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+      </div>
+      <div class="form-field">
+        {{ form.confirm_password.label }}
+        {{ form.confirm_password(class_="form-control", autocomplete="new-password", placeholder="Enter your password again") }}
+        {% for error in form.confirm_password.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+      </div>
+      {{ form.submit(class_="button button-primary button-full") }}
+    </form>
+    <p class="form-footnote">Already registered? <a href="{{ url_for('auth.login') }}">Log in</a>.</p>
+  </div>
+</section>
+{% endblock %}

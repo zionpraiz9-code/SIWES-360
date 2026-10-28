@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ dashboard_title }} dashboard | SIWES360{% endblock %}
+{% block content %}
+<section class="dashboard-heading">
+  <p class="eyebrow">{{ dashboard_title }} WORKSPACE</p>
+  <h1>Welcome, {{ current_user.full_name }}.</h1>
+  <p>Your {{ dashboard_title|lower }} dashboard is ready.</p>
+</section>
+<section class="dashboard-card">
+  <span class="status-pill">STEP 1 COMPLETE</span>
+  <h2>Welcome to SIWES360</h2>
+  <p>This secure workspace is the foundation for your SIWES activities. Features for placement coordination, supervision, and progress monitoring will be added in later development steps.</p>
+  <p class="muted">Signed in as <strong>{{ current_user.email }}</strong>.</p>
+</section>
+{% endblock %}

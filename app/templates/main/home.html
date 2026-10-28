@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}SIWES360 | Industrial training, connected{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-copy">
+    <p class="eyebrow">INDUSTRIAL TRAINING, CONNECTED</p>
+    <h1>Make every stage of your SIWES journey <span>count.</span></h1>
+    <p class="hero-description">SIWES is an important opportunity to take what you learn in class into the workplace. SIWES360 is designed to make that experience easier to follow, with students and supervisors brought together around one training journey.</p>
+    <div class="hero-actions">
+      <a class="button button-primary" href="{{ url_for('auth.register') }}">Create a student account</a>
+      <a class="button button-outline" href="{{ url_for('auth.login') }}">Log in</a>
+    </div>
+  </div>
+  <aside class="hero-card">
+    <span class="card-icon" aria-hidden="true">360</span>
+    <h2>One training experience</h2>
+    <p>Purpose-built spaces for students, industry supervisors, university supervisors, and administrators.</p>
+    <div class="role-list">
+      <span>Student</span><span>Industry supervisor</span>
+      <span>University supervisor</span><span>Administrator</span>
+    </div>
+  </aside>
+</section>
+
+<section class="intro-section" aria-labelledby="siwes-intro-heading">
+  <div class="section-heading">
+    <p class="eyebrow">LEARNING BEYOND THE CLASSROOM</p>
+    <h2 id="siwes-intro-heading">A valuable step from study to work</h2>
+    <p>Industrial training gives students the chance to experience a professional environment, practise their skills, and learn from people already working in their field. It can be an exciting time, but keeping everyone informed and focused takes good communication.</p>
+    <p>SIWES360 is being built to support that process. It brings the people involved in a student’s training into one shared experience, helping make the journey clearer from the first day on placement to the lessons students take back to their studies.</p>
+  </div>
+</section>
+
+<section class="audience-section" aria-labelledby="audience-heading">
+  <div class="section-heading">
+    <p class="eyebrow">ONE JOURNEY, SHARED SUPPORT</p>
+    <h2 id="audience-heading">Made for the people involved</h2>
+    <p>Each person has a different part to play in a successful training experience. SIWES360 is designed with those perspectives in mind.</p>
+  </div>
+  <div class="audience-grid">
+    <article class="audience-card">
+      <h3>Students</h3>
+      <p>Build confidence in the workplace, connect classroom knowledge to real tasks, and make the most of each learning opportunity.</p>
+    </article>
+    <article class="audience-card">
+      <h3>Industry supervisors</h3>
+      <p>Guide students through day-to-day workplace learning and help them develop practical experience and professional habits.</p>
+    </article>
+    <article class="audience-card">
+      <h3>University supervisors</h3>
+      <p>Stay connected to students’ industrial training and support the link between academic learning and workplace experience.</p>
+    </article>
+  </div>
+</section>
+
+<section class="journey-section" aria-labelledby="journey-heading">
+  <div class="section-heading">
+    <p class="eyebrow">THE SIWES360 APPROACH</p>
+    <h2 id="journey-heading">Make the experience count</h2>
+  </div>
+  <div class="journey-list">
+    <article>
+      <span class="journey-number" aria-hidden="true">01</span>
+      <div>
+        <h3>Step into a new environment</h3>
+        <p>Meet new teams, understand workplace expectations, and see how your field works beyond the classroom.</p>
+      </div>
+    </article>
+    <article>
+      <span class="journey-number" aria-hidden="true">02</span>
+      <div>
+        <h3>Learn by doing</h3>
+        <p>Take part in practical tasks, ask questions, and grow your skills with support from experienced supervisors.</p>
+      </div>
+    </article>
+    <article>
+      <span class="journey-number" aria-hidden="true">03</span>
+      <div>
+        <h3>Reflect and keep growing</h3>
+        <p>Notice what you are learning, recognise areas to improve, and carry useful experience into your next step.</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="closing-section">
+  <div>
+    <p class="eyebrow">YOUR NEXT STEP STARTS HERE</p>
+    <h2>Get ready for your SIWES journey.</h2>
+    <p>Create a student account to get started, or log in if you already have one.</p>
+  </div>
+  <div class="hero-actions">
+    <a class="button button-primary" href="{{ url_for('auth.register') }}">Create a student account</a>
+    <a class="button button-outline" href="{{ url_for('auth.login') }}">Log in</a>
+  </div>
+</section>
+{% endblock %}
