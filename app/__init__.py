@@ -1,5 +1,6 @@
 import click
 import os
+from datetime import datetime
 from email_validator import EmailNotValidError, validate_email
 from flask import Flask, jsonify
 from sqlalchemy import func
@@ -54,6 +55,10 @@ def create_app(test_config=None):
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
+
+    @app.context_processor
+    def inject_current_year():
+        return {"current_year": datetime.now().year}
 
     @app.cli.command("create-user")
     def create_user_command():

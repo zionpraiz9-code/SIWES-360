@@ -1,0 +1,58 @@
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-grid">
+      <section class="footer-brand-column" aria-labelledby="footer-brand-heading">
+        <a class="footer-product-brand" href="{{ url_for('main.home') }}" aria-label="SIWES360 home">
+          <span class="footer-product-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+          <span id="footer-brand-heading">SIWES<span class="footer-brand-accent">360</span></span>
+        </a>
+        <p class="footer-description">A smarter way to manage, monitor, and analyse industrial training.</p>
+        <p class="footer-status"><span aria-hidden="true"></span>Built for smarter industrial training.</p>
+        <div class="developer-credit">
+          <span class="developer-mark" aria-hidden="true">ZT</span>
+          <span>
+            <span class="developer-label">Developed with precision by</span>
+            <strong class="developer-name">ZION TECH</strong>
+            <span class="developer-tagline">Building intelligent digital experiences.</span>
+          </span>
+        </div>
+      </section>
+
+      <nav class="footer-column" aria-labelledby="footer-platform-heading">
+        <h2 id="footer-platform-heading">Platform</h2>
+        <ul>
+          {% if current_user.is_authenticated %}
+            <li><a href="{{ url_for('main.' ~ current_user.role ~ '_dashboard') }}">Dashboard</a></li>
+          {% else %}
+            <li><a href="{{ url_for('auth.login') }}">Log in to your dashboard</a></li>
+          {% endif %}
+        </ul>
+        <p class="footer-note">More training tools will appear here as they become available.</p>
+      </nav>
+
+      <section class="footer-column" aria-labelledby="footer-support-heading">
+        <h2 id="footer-support-heading">Support &amp; Resources</h2>
+        <p class="footer-note">Help centre, guides, FAQs, and in-app support are not available in this version.</p>
+      </section>
+
+      <nav class="footer-column" aria-labelledby="footer-account-heading">
+        <h2 id="footer-account-heading">Account &amp; Information</h2>
+        <ul>
+          {% if current_user.is_authenticated %}
+            <li><a href="{{ url_for('auth.change_password') }}">Change password</a></li>
+          {% else %}
+            <li><a href="{{ url_for('auth.login') }}">Log in</a></li>
+            <li><a href="{{ url_for('auth.register') }}">Create a student account</a></li>
+          {% endif %}
+        </ul>
+        <p class="footer-note">Profile and policy pages are not yet available.</p>
+      </nav>
+    </div>
+
+    <div class="footer-bottom">
+      <p class="footer-copyright">© {{ current_year }} SIWES360. All rights reserved.</p>
+      <p class="footer-signature">Designed &amp; Developed by <strong>ZION TECH</strong></p>
+      <p class="footer-closing">Technology powering better industrial training experiences.</p>
+    </div>
+  </div>
+</footer>

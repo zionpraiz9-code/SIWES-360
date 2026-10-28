@@ -18,10 +18,10 @@ class Config:
 class DevelopmentConfig(Config):
     DEBUG = True
 
-
+ 
 class TestingConfig(Config):
     TESTING = True
-    SECRET_KEY = "test-only-secret-key"
+    SECRET_KEY=my-super-secret-key-123456
     SQLALCHEMY_DATABASE_URI = "sqlite://"
     WTF_CSRF_ENABLED = False
 
@@ -30,6 +30,7 @@ class ProductionConfig(Config):
     DEBUG = False
     SESSION_COOKIE_SECURE = True
     PREFERRED_URL_SCHEME = "https"
+
 
 
 CONFIG_BY_NAME = {
