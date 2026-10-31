@@ -2,7 +2,7 @@ import os
 
 
 class Config:
-    SECRET_KEY = os.environ.get("SECRET_KEY")
+    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key")
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") or "sqlite:///siwes360.db"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SESSION_COOKIE_SECURE = os.environ.get(
@@ -21,7 +21,7 @@ class DevelopmentConfig(Config):
  
 class TestingConfig(Config):
     TESTING = True
-    SECRET_KEY=my-super-secret-key-123456
+    SECRET_KEY = "my-super-secret-key-123456"
     SQLALCHEMY_DATABASE_URI = "sqlite://"
     WTF_CSRF_ENABLED = False
 
