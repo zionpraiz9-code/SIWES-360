@@ -1,1 +1,135 @@
-{% extends "main/role_dashboard.html" %}
+{% extends "base.html" %}
+{% block title %}Student dashboard | SIWES360{% endblock %}
+{% block content %}
+<section class="dashboard-heading student-dashboard-heading">
+  <div>
+    <p class="eyebrow">STUDENT WORKSPACE</p>
+    <h1>Welcome, {{ current_user.full_name }}.</h1>
+    <p>Track your training progress, keep your logbook up to date, and stay connected with your supervisor.</p>
+  </div>
+  <span class="dashboard-date">{{ today.strftime("%A, %d %B %Y") }}</span>
+</section>
+
+<section class="metric-grid" aria-label="Training overview">
+  <article class="metric-card">
+    <div class="metric-card-top"><span class="metric-icon">%</span><span class="metric-label">ATTENDANCE</span></div>
+    {% if attendance_percentage is not none %}
+      <p class="metric-value">{{ attendance_percentage }}<span>%</span></p>
+      <p class="metric-note">of placement weekdays attended</p>
+    {% else %}
+      <p class="metric-value metric-value-placeholder">—</p>
+      <p class="metric-note">Set your placement start date below</p>
+    {% endif %}
+  </article>
+  <article class="metric-card">
+    <div class="metric-card-top"><span class="metric-icon">L</span><span class="metric-label">DAILY LOGS</span></div>
+    <p class="metric-value">{{ daily_log_count }}</p>
+    <p class="metric-note">entries submitted</p>
+  </article>
+  <article class="metric-card">
+    <div class="metric-card-top"><span class="metric-icon">W</span><span class="metric-label">THIS WEEK'S REPORT</span></div>
+    <p class="metric-value metric-status">{{ weekly_report.status|title if weekly_report else "Not submitted" }}</p>
+    <p class="metric-note">
+      {% if weekly_report %}Week of {{ weekly_report.week_start.strftime("%d %b") }}{% else %}Your weekly summary is due{% endif %}
+    </p>
+  </article>
+  <article class="metric-card">
+    <div class="metric-card-top"><span class="metric-icon">F</span><span class="metric-label">SUPERVISOR FEEDBACK</span></div>
+    <p class="metric-value">{{ pending_feedback_count }}</p>
+    <p class="metric-note">items awaiting review</p>
+  </article>
+</section>
+
+<section class="workspace-section">
+  <div class="section-title-row">
+    <div>
+      <p class="eyebrow">STAY ON TRACK</p>
+      <h2>Quick actions</h2>
+    </div>
+  </div>
+  <div class="quick-action-grid">
+    <a class="quick-action" href="{{ url_for('main.new_daily_log') }}">
+      <span class="quick-action-icon">+</span>
+      <span><strong>New log entry</strong><small>Record today's training activities</small></span>
+      <span class="quick-action-arrow" aria-hidden="true">→</span>
+    </a>
+    <a class="quick-action" href="{{ url_for('main.mark_attendance') }}">
+      <span class="quick-action-icon">✓</span>
+      <span><strong>Mark attendance</strong><small>Update a training day</small></span>
+      <span class="quick-action-arrow" aria-hidden="true">→</span>
+    </a>
+    <a class="quick-action" href="{{ url_for('main.submit_weekly_report') }}">
+      <span class="quick-action-icon">↗</span>
+      <span><strong>Submit weekly report</strong><small>Share your progress this week</small></span>
+      <span class="quick-action-arrow" aria-hidden="true">→</span>
+    </a>
+  </div>
+</section>
+
+{% if placement_start_date %}
+  <section class="placement-date-card">
+    <div>
+      <p class="eyebrow">PLACEMENT</p>
+      <h2>Placement start date</h2>
+      <p>Your attendance rate is measured against weekdays from {{ placement_start_date.strftime("%d %B %Y") }}.</p>
+    </div>
+    <form class="placement-date-form" method="post" action="{{ url_for('main.set_placement_start') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="sr-only" for="placement-start-date">Placement start date</label>
+      <input class="form-control" id="placement-start-date" name="placement_start_date" type="date"
+             value="{{ placement_start_date.isoformat() }}" max="{{ today.isoformat() }}" required>
+      <button class="button button-outline" type="submit">Update date</button>
+    </form>
+  </section>
+{% else %}
+  <section class="placement-date-card">
+    <div>
+      <p class="eyebrow">PERSONALIZE YOUR METRICS</p>
+      <h2>When did your placement start?</h2>
+      <p>Set your start date to calculate attendance against your placement weekdays.</p>
+    </div>
+    <form class="placement-date-form" method="post" action="{{ url_for('main.set_placement_start') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="sr-only" for="placement-start-date">Placement start date</label>
+      <input class="form-control" id="placement-start-date" name="placement_start_date" type="date"
+             max="{{ today.isoformat() }}" required>
+      <button class="button button-primary" type="submit">Save start date</button>
+    </form>
+  </section>
+{% endif %}
+
+<section class="workspace-section recent-logs-section">
+  <div class="section-title-row">
+    <div>
+      <p class="eyebrow">YOUR PROGRESS</p>
+      <h2>Recent daily logs</h2>
+    </div>
+    <a class="text-link" href="{{ url_for('main.new_daily_log') }}">Add a log <span aria-hidden="true">→</span></a>
+  </div>
+  {% if recent_logs %}
+    <div class="recent-log-list">
+      {% for log in recent_logs %}
+        <article class="recent-log">
+          <div class="recent-log-date">{{ log.log_date.strftime("%d %b") }}</div>
+          <div class="recent-log-copy">
+            <h3>{{ log.title }}</h3>
+            <p>{{ log.activities|truncate(160, true) }}</p>
+          </div>
+          {% if log.supervisor_feedback %}
+            <span class="feedback-badge feedback-reviewed">Feedback received</span>
+          {% else %}
+            <span class="feedback-badge">Awaiting feedback</span>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <span class="empty-state-icon">L</span>
+      <h3>Your logbook starts here</h3>
+      <p>Capture what you learn and accomplish during your placement.</p>
+      <a class="button button-primary" href="{{ url_for('main.new_daily_log') }}">Create your first log</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

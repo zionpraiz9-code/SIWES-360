@@ -1,7 +1,7 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from flask_login import UserMixin
-from sqlalchemy import CheckConstraint, String
+from sqlalchemy import CheckConstraint, UniqueConstraint
 from sqlalchemy.orm import validates
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -27,6 +27,12 @@ class User(UserMixin, db.Model):
         db.DateTime(timezone=True),
         nullable=False,
         default=lambda: datetime.now(timezone.utc),
+    )
+    student_profile = db.relationship(
+        "StudentProfile",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
     )
 
     __table_args__ = (
@@ -68,3 +74,95 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+
+class StudentProfile(db.Model):
+    __tablename__ = "student_profiles"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+    )
+    placement_start_date = db.Column(db.Date, nullable=True)
+
+    user = db.relationship("User", back_populates="student_profile")
+
+
+class DailyLog(db.Model):
+    __tablename__ = "daily_logs"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    log_date = db.Column(db.Date, nullable=False, index=True, default=date.today)
+    title = db.Column(db.String(120), nullable=False)
+    activities = db.Column(db.Text, nullable=False)
+    supervisor_feedback = db.Column(db.Text, nullable=True)
+    submitted_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+    )
+
+
+class Attendance(db.Model):
+    __tablename__ = "attendances"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    attendance_date = db.Column(db.Date, nullable=False, index=True)
+    status = db.Column(db.String(16), nullable=False)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+    )
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "attendance_date", name="uq_attendance_user_date"),
+        CheckConstraint(
+            "status IN ('present', 'absent')",
+            name="ck_attendances_status",
+        ),
+    )
+
+
+class WeeklyReport(db.Model):
+    __tablename__ = "weekly_reports"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    week_start = db.Column(db.Date, nullable=False, index=True)
+    summary = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(16), nullable=False, default="submitted")
+    supervisor_feedback = db.Column(db.Text, nullable=True)
+    submitted_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+    )
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "week_start", name="uq_weekly_report_user_week"),
+        CheckConstraint(
+            "status IN ('submitted', 'reviewed')",
+            name="ck_weekly_reports_status",
+        ),
+    )

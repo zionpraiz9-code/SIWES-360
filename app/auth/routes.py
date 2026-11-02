@@ -6,7 +6,7 @@ from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 
 from app.auth.forms import ChangePasswordForm, LoginForm, RegistrationForm
-from app.models import User
+from app.models import StudentProfile, User
 from extensions import db
 
 
@@ -48,6 +48,7 @@ def register():
             role="student",
         )
         user.set_password(form.password.data)
+        user.student_profile = StudentProfile()
         db.session.add(user)
         try:
             db.session.commit()

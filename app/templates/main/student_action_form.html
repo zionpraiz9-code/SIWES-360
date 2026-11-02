@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}{{ action_title }} | SIWES360{% endblock %}
+{% block content %}
+<section class="action-page">
+  <a class="text-link back-link" href="{{ url_for('main.student_dashboard') }}">← Back to dashboard</a>
+  <div class="form-card student-action-card">
+    <p class="eyebrow">STUDENT WORKSPACE</p>
+    <h1>{{ action_title }}</h1>
+    <p class="muted">{{ action_description }}</p>
+
+    {% if error %}
+      <div class="flash flash-danger" role="alert">{{ error }}</div>
+    {% endif %}
+
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {% if action == "log" %}
+        <div class="form-field">
+          <label for="title">Entry title</label>
+          <input class="form-control" id="title" name="title" type="text" maxlength="120" required
+                 value="{{ form_values.get('title', '') }}" placeholder="e.g. Orientation and safety briefing">
+        </div>
+        <div class="form-field">
+          <label for="log-date">Activity date</label>
+          <input class="form-control" id="log-date" name="log_date" type="date" max="{{ today.isoformat() }}" required
+                 value="{{ form_values.get('log_date', today.isoformat()) }}">
+        </div>
+        <div class="form-field">
+          <label for="activities">Activities and skills learned</label>
+          <textarea class="form-control form-textarea" id="activities" name="activities" rows="6" maxlength="5000" required
+                    placeholder="Describe the tasks you completed and what you learned.">{{ form_values.get('activities', '') }}</textarea>
+        </div>
+      {% elif action == "attendance" %}
+        <div class="form-field">
+          <label for="attendance-date">Attendance date</label>
+          <input class="form-control" id="attendance-date" name="attendance_date" type="date"
+                 max="{{ today.isoformat() }}" required
+                 value="{{ form_values.get('attendance_date', today.isoformat()) }}">
+        </div>
+        <div class="form-field">
+          <label for="status">Attendance status</label>
+          <select class="form-control" id="status" name="status" required>
+            <option value="">Select status</option>
+            <option value="present" {% if form_values.get('status') == 'present' %}selected{% endif %}>Present</option>
+            <option value="absent" {% if form_values.get('status') == 'absent' %}selected{% endif %}>Absent</option>
+          </select>
+        </div>
+      {% else %}
+        <div class="form-field">
+          <label for="summary">Weekly progress summary</label>
+          <textarea class="form-control form-textarea" id="summary" name="summary" rows="8" maxlength="10000" required
+                    placeholder="Summarize your work, skills developed, and any challenges this week.">{{ form_values.get('summary', '') }}</textarea>
+        </div>
+      {% endif %}
+      <button class="button button-primary button-full" type="submit">{{ action_title }}</button>
+    </form>
+  </div>
+</section>
+{% endblock %}
