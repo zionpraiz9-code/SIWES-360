@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% block title %}Inspect Student | SIWES360{% endblock %}
+{% block content %}
+<section class="school-inspection-page">
+  <a class="text-link back-link" href="{{ url_for('main.school_supervisor_dashboard') }}">← Back to assigned students</a>
+  <header class="school-inspection-heading">
+    <p class="eyebrow">SCHOOL SUPERVISOR · STUDENT INSPECTION</p>
+    <h1>{{ profile.user.full_name }}</h1>
+    <p>{{ profile.user.email }}</p>
+  </header>
+
+  <section class="school-inspection-card" aria-labelledby="student-details-heading">
+    <div class="school-inspection-subheading">
+      <p class="eyebrow">PLACEMENT PROFILE</p>
+      <h2 id="student-details-heading">Student details</h2>
+    </div>
+    <dl class="school-student-details">
+      <div>
+        <dt>Matric number</dt>
+        <dd>{{ profile.matric_number or "Not provided" }}</dd>
+      </div>
+      <div>
+        <dt>Department</dt>
+        <dd>{{ profile.department or "Not provided" }}</dd>
+      </div>
+      <div>
+        <dt>Company placement</dt>
+        <dd>{{ profile.company_name or "Not provided" }}</dd>
+      </div>
+      <div>
+        <dt>Industrial supervisor email</dt>
+        <dd>
+          {% if profile.supervisor_email %}
+            <a href="mailto:{{ profile.supervisor_email }}">{{ profile.supervisor_email }}</a>
+          {% else %}
+            Not provided
+          {% endif %}
+        </dd>
+      </div>
+    </dl>
+  </section>
+
+  <nav class="school-inspection-nav" aria-label="Student record sections">
+    <a href="#daily-logs">Daily logs ({{ logs|length }})</a>
+    <a href="#weekly-reports">Weekly reports ({{ weekly_reports|length }})</a>
+    <a href="#academic-assessment">Academic assessment</a>
+  </nav>
+
+  <section class="school-inspection-card" id="daily-logs" aria-labelledby="inspection-logs-heading">
+    <div class="school-inspection-subheading">
+      <p class="eyebrow">INDUSTRIAL SUPERVISOR REVIEW · READ ONLY</p>
+      <h2 id="inspection-logs-heading">Daily logs</h2>
+    </div>
+    {% if logs %}
+      <div class="school-inspection-records">
+        {% for log in logs %}
+          <article class="school-inspection-record">
+            <header>
+              <div>
+                <p>{{ log.log_date.strftime("%A, %d %B %Y") }}</p>
+                <h3>{{ log.title }}</h3>
+              </div>
+              {% if log.status == "Approved" %}
+                <span class="inspection-status inspection-status-approved">Approved</span>
+              {% elif log.status == "Rejected" %}
+                <span class="inspection-status inspection-status-rejected">Rejected</span>
+              {% else %}
+                <span class="inspection-status inspection-status-pending">Pending</span>
+              {% endif %}
+            </header>
+            <dl>
+              <div>
+                <dt>Activities</dt>
+                <dd>{{ log.activities }}</dd>
+              </div>
+              {% if log.tools_used %}
+                <div>
+                  <dt>Tools and technologies</dt>
+                  <dd>{{ log.tools_used }}</dd>
+                </div>
+              {% endif %}
+              {% if log.skills_learned %}
+                <div>
+                  <dt>Skills learned</dt>
+                  <dd>{{ log.skills_learned }}</dd>
+                </div>
+              {% endif %}
+              {% if log.challenges_encountered %}
+                <div>
+                  <dt>Challenges encountered</dt>
+                  <dd>{{ log.challenges_encountered }}</dd>
+                </div>
+              {% endif %}
+              {% if log.supervisor_comment or log.supervisor_feedback %}
+                <div class="inspection-feedback">
+                  <dt>Industrial supervisor comment</dt>
+                  <dd>{{ log.supervisor_comment or log.supervisor_feedback }}</dd>
+                </div>
+              {% endif %}
+            </dl>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <span class="empty-state-icon">L</span>
+        <h3>No daily logs yet</h3>
+        <p>This student has not submitted any daily log entries.</p>
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="school-inspection-card" id="weekly-reports" aria-labelledby="inspection-reports-heading">
+    <div class="school-inspection-subheading">
+      <p class="eyebrow">INDUSTRIAL SUPERVISOR REVIEW · READ ONLY</p>
+      <h2 id="inspection-reports-heading">Weekly reports</h2>
+    </div>
+    {% if weekly_reports %}
+      <div class="school-inspection-records">
+        {% for report in weekly_reports %}
+          <article class="school-inspection-record">
+            <header>
+              <div>
+                <p>Submitted {{ report.submitted_at.strftime("%d %b %Y") }}</p>
+                <h3>Week starting {{ report.week_start.strftime("%d %B %Y") }}</h3>
+              </div>
+              {% if report.status == "Approved" %}
+                <span class="inspection-status inspection-status-approved">Approved</span>
+              {% elif report.status == "Rejected" %}
+                <span class="inspection-status inspection-status-rejected">Rejected</span>
+              {% else %}
+                <span class="inspection-status inspection-status-pending">Pending</span>
+              {% endif %}
+            </header>
+            <dl>
+              <div>
+                <dt>Summary of activities</dt>
+                <dd>{{ report.summary }}</dd>
+              </div>
+              {% if report.challenges_encountered %}
+                <div>
+                  <dt>Challenges encountered</dt>
+                  <dd>{{ report.challenges_encountered }}</dd>
+                </div>
+              {% endif %}
+              {% if report.plans_for_next_week %}
+                <div>
+                  <dt>Plans for next week</dt>
+                  <dd>{{ report.plans_for_next_week }}</dd>
+                </div>
+              {% endif %}
+              {% if report.supervisor_comment or report.supervisor_feedback %}
+                <div class="inspection-feedback">
+                  <dt>Industrial supervisor comment</dt>
+                  <dd>{{ report.supervisor_comment or report.supervisor_feedback }}</dd>
+                </div>
+              {% endif %}
+            </dl>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <span class="empty-state-icon">W</span>
+        <h3>No weekly reports yet</h3>
+        <p>This student has not submitted any weekly reports.</p>
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="school-inspection-card" id="academic-assessment" aria-labelledby="academic-assessment-heading">
+    <div class="school-inspection-subheading">
+      <p class="eyebrow">ACADEMIC EVALUATION</p>
+      <h2 id="academic-assessment-heading">Academic assessment</h2>
+    </div>
+    {% if inspection_error %}
+      <p class="school-inspection-error" role="alert">{{ inspection_error }}</p>
+    {% endif %}
+    <form class="school-assessment-form" method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-field">
+        <label for="academic_score">Academic score</label>
+        <input
+          class="form-control"
+          id="academic_score"
+          name="academic_score"
+          type="number"
+          min="0"
+          step="any"
+          value="{{ score_value }}"
+          required
+        >
+      </div>
+      <div class="form-field">
+        <label for="school_supervisor_comment">Academic comments</label>
+        <textarea
+          class="form-control form-textarea"
+          id="school_supervisor_comment"
+          name="school_supervisor_comment"
+          rows="5"
+          maxlength="5000"
+          placeholder="Add academic feedback for this student."
+        >{{ comment_value }}</textarea>
+      </div>
+      <button class="button button-primary" type="submit">Save Assessment</button>
+    </form>
+  </section>
+</section>
+{% endblock %}

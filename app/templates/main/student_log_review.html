@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Review Logs | SIWES360{% endblock %}
+{% block content %}
+<section class="supervisor-dashboard">
+  <a class="text-link back-link" href="{{ url_for(dashboard_endpoint) }}">← Back to assigned students</a>
+  <header class="dashboard-heading">
+    <p class="eyebrow">STUDENT LOGBOOK</p>
+    <h1>{{ profile.user.full_name }}</h1>
+    <p>{{ profile.user.email }}{% if profile.matric_number %} · {{ profile.matric_number }}{% endif %}</p>
+  </header>
+
+  <section class="workspace-section" aria-labelledby="student-logs-heading">
+    <div class="section-title-row">
+      <div>
+        <p class="eyebrow">PLACEMENT ACTIVITY</p>
+        <h2 id="student-logs-heading">Daily logs</h2>
+      </div>
+      <span class="logbook-count">{{ logs|length }} {{ "log" if logs|length == 1 else "logs" }}</span>
+    </div>
+
+    {% if logs %}
+      <div class="supervisor-student-list">
+        {% for log in logs %}
+          <article class="supervisor-student-card">
+            <header class="supervisor-student-header">
+              <div>
+                <p class="eyebrow">{{ log.log_date.strftime("%A, %d %B %Y") }}</p>
+                <h2>{{ log.title }}</h2>
+              </div>
+              {% if log.status == "Approved" %}
+                <span class="logbook-status logbook-status-approved">Approved</span>
+              {% elif log.status == "Rejected" %}
+                <span class="logbook-status logbook-status-rejected">Rejected</span>
+              {% else %}
+                <span class="logbook-status logbook-status-pending">Pending review</span>
+              {% endif %}
+            </header>
+            <dl class="supervisor-student-details">
+              <div>
+                <dt>Activities</dt>
+                <dd>{{ log.activities }}</dd>
+              </div>
+              <div>
+                <dt>Tools and technologies</dt>
+                <dd>{{ log.tools_used or "Not provided" }}</dd>
+              </div>
+              <div>
+                <dt>Skills learned</dt>
+                <dd>{{ log.skills_learned or "Not provided" }}</dd>
+              </div>
+              <div>
+                <dt>Challenges encountered</dt>
+                <dd>{{ log.challenges_encountered or "Not provided" }}</dd>
+              </div>
+              {% if log.supervisor_feedback %}
+                <div>
+                  <dt>Supervisor feedback</dt>
+                  <dd>{{ log.supervisor_feedback }}</dd>
+                </div>
+              {% endif %}
+            </dl>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <span class="empty-state-icon">L</span>
+        <h3>No daily logs yet</h3>
+        <p>This student has not submitted any daily log entries.</p>
+      </div>
+    {% endif %}
+  </section>
+</section>
+{% endblock %}

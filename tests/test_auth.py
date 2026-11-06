@@ -128,7 +128,17 @@ class AuthenticationTests(unittest.TestCase):
         self.login()
         response = self.client.get("/industry-supervisor/dashboard")
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b"Industry Supervisor dashboard", response.data)
+        self.assertIn(b"Assigned students", response.data)
+
+    def test_student_is_redirected_from_supervisor_dashboard_with_warning(self):
+        self.create_user(role="student")
+        self.login()
+
+        response = self.client.get("/supervisor/dashboard", follow_redirects=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"You are not authorized to access the supervisor dashboard.", response.data)
+        self.assertEqual(response.request.path, "/student/dashboard")
 
     def test_login_rejects_external_next_redirect(self):
         self.create_user()

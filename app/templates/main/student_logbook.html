@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Digital Logbook | SIWES360{% endblock %}
+{% block content %}
+<section class="logbook-page">
+  <div class="dashboard-heading">
+    <p class="eyebrow">STUDENT WORKSPACE</p>
+    <h1>Digital Logbook</h1>
+    <p>Capture your daily activities, tools, skills, and progress during your placement.</p>
+  </div>
+
+  <section class="form-card logbook-form-card" aria-labelledby="new-log-heading">
+    <div class="logbook-section-heading">
+      <div>
+        <p class="eyebrow">NEW ENTRY</p>
+        <h2 id="new-log-heading">Record your day</h2>
+      </div>
+    </div>
+    <form method="post" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="logbook-form-grid">
+        {% for field in (form.log_date, form.title) %}
+          <div class="form-field">
+            {{ field.label }}
+            {% if field.name == "log_date" %}
+              {{ field(class_="form-control", max=today.isoformat(), required=True) }}
+            {% else %}
+              {{ field(class_="form-control", placeholder="e.g. Equipment inspection", required=True) }}
+            {% endif %}
+            {% for error in field.errors %}
+              <span class="field-error" role="alert">{{ error }}</span>
+            {% endfor %}
+          </div>
+        {% endfor %}
+        {% for field in (form.activities, form.tools_used, form.skills_learned, form.challenges_encountered) %}
+          <div class="form-field logbook-wide-field">
+            {{ field.label }}
+            {% if field.name == "activities" %}
+              {{ field(class_="form-control form-textarea", rows="5", maxlength="5000", placeholder="Describe the work you completed and what you accomplished.", required=True) }}
+            {% elif field.name == "tools_used" %}
+              {{ field(class_="form-control form-textarea", rows="3", maxlength="2000", placeholder="List software, equipment, or other tools you used.") }}
+            {% elif field.name == "skills_learned" %}
+              {{ field(class_="form-control form-textarea", rows="3", maxlength="2000", placeholder="What new or improved skills did you practice?") }}
+            {% else %}
+              {{ field(class_="form-control form-textarea", rows="3", maxlength="3000", placeholder="Note any challenges and how you addressed them.") }}
+            {% endif %}
+            {% for error in field.errors %}
+              <span class="field-error" role="alert">{{ error }}</span>
+            {% endfor %}
+          </div>
+        {% endfor %}
+      </div>
+      {{ form.submit(class_="button button-primary") }}
+    </form>
+  </section>
+
+  <section class="workspace-section logbook-history" aria-labelledby="log-history-heading">
+    <div class="section-title-row">
+      <div>
+        <p class="eyebrow">YOUR PROGRESS</p>
+        <h2 id="log-history-heading">Past daily logs</h2>
+      </div>
+      <span class="logbook-count">{{ logs|length }} {{ "entry" if logs|length == 1 else "entries" }}</span>
+    </div>
+    {% if logs %}
+      <div class="logbook-table-wrap">
+        <table class="logbook-table">
+          <thead>
+            <tr>
+              <th scope="col">Submitted</th>
+              <th scope="col">Activity title</th>
+              <th scope="col">Tools &amp; technologies</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in logs %}
+              <tr>
+                <td data-label="Submitted">
+                  <time datetime="{{ log.submitted_at.isoformat() }}">{{ log.submitted_at.strftime("%d %b %Y") }}</time>
+                </td>
+                <td data-label="Activity title">
+                  <strong>{{ log.title }}</strong>
+                  <span class="logbook-activity-date">Activity date: {{ log.log_date.strftime("%d %b %Y") }}</span>
+                </td>
+                <td data-label="Tools &amp; technologies">{{ log.tools_used or "—" }}</td>
+                <td data-label="Status">
+                  {% if log.status == "Approved" %}
+                    <span class="logbook-status logbook-status-approved">Approved</span>
+                  {% elif log.status == "Rejected" %}
+                    <span class="logbook-status logbook-status-rejected">Rejected</span>
+                  {% else %}
+                    <span class="logbook-status logbook-status-pending">Pending</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <span class="empty-state-icon">L</span>
+        <h3>No daily logs yet</h3>
+        <p>Submit your first entry above to start building your training record.</p>
+      </div>
+    {% endif %}
+  </section>
+</section>
+{% endblock %}

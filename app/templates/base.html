@@ -8,12 +8,23 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-  <header class="site-header">
-    <nav class="navbar container" aria-label="Main navigation">
+  <header class="site-header sticky-top">
+    <nav class="navbar container navbar-glass" aria-label="Main navigation">
       <a class="brand" href="{{ url_for('main.home') }}">SIWES<span>360</span></a>
       <div class="nav-links">
         {% if current_user.is_authenticated %}
           <span class="nav-user">{{ current_user.full_name }}</span>
+          {% if current_user.role == "student" %}
+            <a href="{{ url_for('main.student_logbook') }}">Digital Logbook</a>
+            <a href="{{ url_for('main.student_weekly_reports') }}">Weekly Reports</a>
+            <a href="{{ url_for('main.student_placement') }}">Placement Details</a>
+          {% elif current_user.role == "supervisor" %}
+            <a href="{{ url_for('main.supervisor_dashboard') }}">Assigned students</a>
+          {% elif current_user.role == "industry_supervisor" %}
+            <a href="{{ url_for('main.industry_supervisor_dashboard') }}">Assigned students</a>
+          {% elif current_user.role == "school_supervisor" %}
+            <a href="{{ url_for('main.school_supervisor_dashboard') }}">Academic dashboard</a>
+          {% endif %}
           <a href="{{ url_for('auth.change_password') }}">Change password</a>
           <form action="{{ url_for('auth.logout') }}" method="post" class="inline-form">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

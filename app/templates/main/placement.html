@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Industrial Placement Details | SIWES360{% endblock %}
+{% block content %}
+<section class="placement-page">
+  <header class="dashboard-heading">
+    <p class="eyebrow">STUDENT WORKSPACE</p>
+    <h1>Industrial Placement Details</h1>
+    <p>Keep your organization, supervisor, and placement dates up to date.</p>
+  </header>
+
+  <section class="form-card placement-form-card" aria-labelledby="placement-form-heading">
+    <div class="placement-section-heading">
+      <p class="eyebrow">PLACEMENT INFORMATION</p>
+      <h2 id="placement-form-heading">Organization and supervisor</h2>
+      <p class="muted">Enter the contact details for your industrial placement.</p>
+    </div>
+
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="placement-form-grid">
+        {% for field in (form.matric_number, form.department, form.company_name, form.company_address, form.supervisor_name, form.supervisor_email, form.supervisor_phone, form.start_date, form.end_date) %}
+          <div class="form-field{% if field.name == 'company_address' %} placement-wide-field{% endif %}">
+            {{ field.label }}
+            {% if field.name == "company_address" %}
+              {{ field(class_="form-control form-textarea", rows="4", maxlength="2000", placeholder="Street address, city, and state", required=True) }}
+            {% elif field.name == "matric_number" %}
+              {{ field(class_="form-control", maxlength="64", placeholder="Your student registration number") }}
+            {% elif field.name == "department" %}
+              {{ field(class_="form-control", maxlength="160", placeholder="Your academic department") }}
+            {% elif field.name == "start_date" or field.name == "end_date" %}
+              {{ field(class_="form-control", required=True) }}
+            {% elif field.name == "supervisor_email" %}
+              {{ field(class_="form-control", type="email", maxlength="255", placeholder="supervisor@example.com", required=True) }}
+            {% elif field.name == "supervisor_phone" %}
+              {{ field(class_="form-control", type="tel", maxlength="32", autocomplete="tel", placeholder="e.g. +234 800 000 0000", required=True) }}
+            {% else %}
+              {{ field(class_="form-control", maxlength="64" if field.name == "matric_number" else "160" if field.name in ("company_name", "department") else "120", required=field.name not in ("matric_number", "department")) }}
+            {% endif %}
+            {% for error in field.errors %}
+              <span class="field-error" role="alert">{{ error }}</span>
+            {% endfor %}
+          </div>
+        {% endfor %}
+      </div>
+      {{ form.submit(class_="button button-primary") }}
+    </form>
+  </section>
+</section>
+{% endblock %}

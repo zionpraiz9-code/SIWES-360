@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}School Supervisor Dashboard | SIWES360{% endblock %}
+{% block content %}
+<section class="school-supervisor-dashboard">
+  <header class="school-supervisor-heading">
+    <p class="eyebrow">ACADEMIC SUPERVISION</p>
+    <h1>Assigned students</h1>
+    <p>View your students' placement details and academic assessment.</p>
+  </header>
+
+  <section aria-labelledby="school-students-heading">
+    <div class="section-title-row">
+      <div>
+        <p class="eyebrow">YOUR STUDENTS</p>
+        <h2 id="school-students-heading">Academic overview</h2>
+      </div>
+      <span class="logbook-count">{{ assigned_students|length }} {{ "student" if assigned_students|length == 1 else "students" }}</span>
+    </div>
+
+    {% if assigned_students %}
+      <div class="school-supervisor-grid">
+        {% for profile in assigned_students %}
+          <article class="school-student-card">
+            <header class="school-student-header">
+              <div>
+                <h2>{{ profile.user.full_name }}</h2>
+                <a href="mailto:{{ profile.user.email }}">{{ profile.user.email }}</a>
+              </div>
+              <span class="school-student-label">Academic record</span>
+            </header>
+            <dl class="school-student-details">
+              <div>
+                <dt>Matric number</dt>
+                <dd>{{ profile.matric_number or "Not provided" }}</dd>
+              </div>
+              <div>
+                <dt>Department</dt>
+                <dd>{{ profile.department or "Not provided" }}</dd>
+              </div>
+              <div>
+                <dt>Company placement</dt>
+                <dd>{{ profile.company_name or "Not provided" }}</dd>
+              </div>
+              <div>
+                <dt>Industrial supervisor email</dt>
+                <dd>
+                  {% if profile.supervisor_email %}
+                    <a href="mailto:{{ profile.supervisor_email }}">{{ profile.supervisor_email }}</a>
+                  {% else %}
+                    Not provided
+                  {% endif %}
+                </dd>
+              </div>
+              <div class="school-score">
+                <dt>Overall academic score</dt>
+                <dd>{{ profile.academic_score }}</dd>
+              </div>
+              <div class="school-comment">
+                <dt>Academic comments</dt>
+                <dd>{{ profile.school_supervisor_comment or "No comments yet." }}</dd>
+              </div>
+            </dl>
+            <a class="button button-primary school-inspect-link"
+               href="{{ url_for('main.school_supervisor_inspect', student_id=profile.user_id) }}">
+              Inspect student
+            </a>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <span class="empty-state-icon">A</span>
+        <h3>No assigned students yet</h3>
+        <p>Students will appear here when their school supervisor email matches your account email.</p>
+      </div>
+    {% endif %}
+  </section>
+</section>
+{% endblock %}

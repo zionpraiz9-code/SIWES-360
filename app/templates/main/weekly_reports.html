@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Weekly Reports | SIWES360{% endblock %}
+{% block content %}
+<section class="weekly-report-page">
+  <header class="dashboard-heading">
+    <p class="eyebrow">STUDENT WORKSPACE</p>
+    <h1>Weekly Reports</h1>
+    <p>Reflect on your training progress and plan the work ahead.</p>
+  </header>
+
+  <section class="form-card weekly-report-form-card" aria-labelledby="weekly-report-form-heading">
+    <div class="weekly-report-section-heading">
+      <p class="eyebrow">WEEKLY PROGRESS</p>
+      <h2 id="weekly-report-form-heading">Submit a report</h2>
+      <p class="muted">Reports are organized by ISO week number for {{ current_year }}.</p>
+    </div>
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="weekly-report-form-grid">
+        <div class="form-field">
+          {{ form.week_number.label }}
+          {{ form.week_number(class_="form-control", min="1", max=current_week, required=True) }}
+          {% for error in form.week_number.errors %}
+            <span class="field-error" role="alert">{{ error }}</span>
+          {% endfor %}
+          <small class="weekly-report-help">Choose a week from 1 to {{ current_week }}.</small>
+        </div>
+        <div class="form-field weekly-report-wide-field">
+          {{ form.summary.label }}
+          {{ form.summary(class_="form-control form-textarea", rows="5", maxlength="10000", placeholder="Summarize your activities, responsibilities, and accomplishments this week.", required=True) }}
+          {% for error in form.summary.errors %}
+            <span class="field-error" role="alert">{{ error }}</span>
+          {% endfor %}
+        </div>
+        <div class="form-field weekly-report-wide-field">
+          {{ form.challenges_encountered.label }}
+          {{ form.challenges_encountered(class_="form-control form-textarea", rows="4", maxlength="5000", placeholder="Describe any challenges and how you addressed them.", required=True) }}
+          {% for error in form.challenges_encountered.errors %}
+            <span class="field-error" role="alert">{{ error }}</span>
+          {% endfor %}
+        </div>
+        <div class="form-field weekly-report-wide-field">
+          {{ form.plans_for_next_week.label }}
+          {{ form.plans_for_next_week(class_="form-control form-textarea", rows="4", maxlength="5000", placeholder="What tasks, goals, or skills will you focus on next week?", required=True) }}
+          {% for error in form.plans_for_next_week.errors %}
+            <span class="field-error" role="alert">{{ error }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {{ form.submit(class_="button button-primary") }}
+    </form>
+  </section>
+
+  <section class="workspace-section weekly-report-history" aria-labelledby="weekly-report-history-heading">
+    <div class="section-title-row">
+      <div>
+        <p class="eyebrow">YOUR SUBMISSIONS</p>
+        <h2 id="weekly-report-history-heading">Previous reports</h2>
+      </div>
+      <span class="weekly-report-count">{{ reports|length }} {{ "report" if reports|length == 1 else "reports" }}</span>
+    </div>
+    {% if reports %}
+      <div class="weekly-report-list">
+        {% for report in reports %}
+          <article class="weekly-report-card">
+            <div class="weekly-report-card-header">
+              <div>
+                <p class="eyebrow">WEEK {{ report.week_start.isocalendar().week }}</p>
+                <h3>Week starting {{ report.week_start.strftime("%d %B %Y") }}</h3>
+              </div>
+              {% if report.status == "Approved" %}
+                <span class="weekly-report-status weekly-report-status-reviewed">Approved</span>
+              {% elif report.status == "Rejected" %}
+                <span class="logbook-status logbook-status-rejected">Rejected</span>
+              {% else %}
+                <span class="weekly-report-status weekly-report-status-pending">Pending review</span>
+              {% endif %}
+            </div>
+            <p class="weekly-report-submitted">
+              Submitted {{ report.submitted_at.strftime("%d %b %Y") }}
+            </p>
+            <div class="weekly-report-content">
+              <section>
+                <h4>Summary of activities</h4>
+                <p>{{ report.summary }}</p>
+              </section>
+              <section>
+                <h4>Challenges encountered</h4>
+                <p>{{ report.challenges_encountered or "—" }}</p>
+              </section>
+              <section>
+                <h4>Plans for next week</h4>
+                <p>{{ report.plans_for_next_week or "—" }}</p>
+              </section>
+              {% if report.supervisor_comment or report.supervisor_feedback %}
+                <section class="weekly-report-feedback">
+                  <h4>Supervisor feedback</h4>
+                  <p>{{ report.supervisor_comment or report.supervisor_feedback }}</p>
+                </section>
+              {% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <span class="empty-state-icon">W</span>
+        <h3>No weekly reports yet</h3>
+        <p>Submit your first report above to keep track of your placement progress.</p>
+      </div>
+    {% endif %}
+  </section>
+</section>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Supervisor Dashboard | SIWES360{% endblock %}
+{% block content %}
+<section class="supervisor-dashboard">
+  <header class="dashboard-heading">
+    <p class="eyebrow">INDUSTRIAL-BASED SUPERVISOR</p>
+    <h1>Assigned students</h1>
+    <p>Review the students whose placement records list you as their supervisor.</p>
+  </header>
+
+  <section class="metric-grid supervisor-metric-grid" aria-label="Supervisor overview">
+    <article class="metric-card">
+      <div class="metric-card-top">
+        <span class="metric-icon" aria-hidden="true">I</span>
+        <span class="metric-label">ASSIGNED INTERNS</span>
+      </div>
+      <p class="metric-value">{{ assigned_students|length }}</p>
+      <p class="metric-note">Students assigned to you</p>
+    </article>
+    <article class="metric-card">
+      <div class="metric-card-top">
+        <span class="metric-icon" aria-hidden="true">P</span>
+        <span class="metric-label">PENDING LOGS</span>
+      </div>
+      <p class="metric-value">{{ pending_logs }}</p>
+      <p class="metric-note">Waiting for your review</p>
+    </article>
+    <article class="metric-card">
+      <div class="metric-card-top">
+        <span class="metric-icon" aria-hidden="true">A</span>
+        <span class="metric-label">APPROVED REVIEWS</span>
+      </div>
+      <p class="metric-value">{{ approved_logs }}</p>
+      <p class="metric-note">Of {{ total_logs }} submitted {{ "log" if total_logs == 1 else "logs" }}</p>
+    </article>
+    <article class="metric-card">
+      <div class="metric-card-top">
+        <span class="metric-icon" aria-hidden="true">%</span>
+        <span class="metric-label">APPROVAL RATE</span>
+      </div>
+      <p class="metric-value">{{ approval_rate }}<span>%</span></p>
+      <p class="metric-note">{{ rejected_logs }} {{ "rejection" if rejected_logs == 1 else "rejections" }}</p>
+    </article>
+  </section>
+
+  <section class="workspace-section" aria-labelledby="assigned-students-heading">
+    <div class="section-title-row">
+      <div>
+        <p class="eyebrow">YOUR PLACEMENTS</p>
+        <h2 id="assigned-students-heading">Student placements</h2>
+      </div>
+      <span class="logbook-count">{{ assigned_students|length }} {{ "student" if assigned_students|length == 1 else "students" }}</span>
+    </div>
+
+    {% if assigned_students %}
+      <div class="supervisor-table-wrap">
+        <table class="supervisor-table">
+          <thead>
+            <tr>
+              <th scope="col">Intern</th>
+              <th scope="col">Matric number</th>
+              <th scope="col">Department</th>
+              <th scope="col">Company</th>
+              <th scope="col">Log approval progress</th>
+              <th scope="col"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for profile in assigned_students %}
+              <tr>
+                <td data-label="Intern">
+                  <strong>{{ profile.user.full_name }}</strong>
+                  <a href="mailto:{{ profile.user.email }}">{{ profile.user.email }}</a>
+                </td>
+                <td data-label="Matric number">{{ profile.matric_number or "Not provided" }}</td>
+                <td data-label="Department">{{ profile.department or "Not provided" }}</td>
+                <td data-label="Company">{{ profile.company_name or "Not provided" }}</td>
+                <td data-label="Log approval progress">
+                  {% set progress = student_progress[profile.user_id] %}
+                  <div
+                    class="progress supervisor-progress"
+                    role="progressbar"
+                    aria-label="Log approval progress for {{ profile.user.full_name }}"
+                    aria-valuenow="{{ progress.percentage }}"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                  >
+                    <div class="progress-bar supervisor-progress-bar" style="width: {{ progress.percentage }}%"></div>
+                  </div>
+                  <small class="supervisor-progress-label">
+                    {{ progress.approved_logs }} of {{ progress.total_logs }} approved · {{ progress.percentage }}%
+                  </small>
+                </td>
+                <td data-label="Actions">
+                  <a class="button button-primary button-small"
+                     href="{{ url_for('main.view_student_logs', student_id=profile.user_id) }}">
+                    Review Logs
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <span class="empty-state-icon">S</span>
+        <h3>No assigned students yet</h3>
+        <p>Students will appear here when their placement supervisor email matches your account email.</p>
+      </div>
+    {% endif %}
+  </section>
+</section>
+{% endblock %}

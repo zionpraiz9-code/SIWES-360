@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block title %}Review Daily Logs | SIWES360{% endblock %}
+{% block content %}
+<section class="supervisor-dashboard">
+  <a class="text-link back-link" href="{{ url_for(dashboard_endpoint) }}">← Back to assigned students</a>
+  <header class="dashboard-heading">
+    <p class="eyebrow">STUDENT LOGBOOK</p>
+    <h1>{{ profile.user.full_name }}</h1>
+    <p>
+      {{ profile.user.email }}
+      {% if profile.matric_number %} · {{ profile.matric_number }}{% endif %}
+      {% if profile.department %} · {{ profile.department }}{% endif %}
+    </p>
+  </header>
+
+  <nav class="supervisor-review-nav" aria-label="Review student submissions">
+    <a href="#daily-logs">Daily logs <span>{{ logs|length }}</span></a>
+    <a href="#weekly-reports">Weekly reports <span>{{ weekly_reports|length }}</span></a>
+  </nav>
+
+  <section class="workspace-section" id="daily-logs" aria-labelledby="student-logs-heading">
+    <div class="section-title-row">
+      <div>
+        <p class="eyebrow">PLACEMENT ACTIVITY</p>
+        <h2 id="student-logs-heading">Daily logs</h2>
+      </div>
+      <span class="logbook-count">{{ logs|length }} {{ "log" if logs|length == 1 else "logs" }}</span>
+    </div>
+
+    {% if logs %}
+      <div class="supervisor-student-list">
+        {% for log in logs %}
+          <article class="supervisor-student-card">
+            <header class="supervisor-student-header">
+              <div>
+                <p class="eyebrow">{{ log.log_date.strftime("%A, %d %B %Y") }}</p>
+                <h2>{{ log.title }}</h2>
+              </div>
+              {% if log.status == "Approved" %}
+                <span class="logbook-status logbook-status-approved">Approved</span>
+              {% elif log.status == "Rejected" %}
+                <span class="logbook-status logbook-status-rejected">Rejected</span>
+              {% else %}
+                <span class="logbook-status logbook-status-pending">Pending</span>
+              {% endif %}
+            </header>
+
+            <dl class="supervisor-student-details">
+              <div>
+                <dt>Activities</dt>
+                <dd>{{ log.activities }}</dd>
+              </div>
+              <div>
+                <dt>Tools and technologies</dt>
+                <dd>{{ log.tools_used or "Not provided" }}</dd>
+              </div>
+              <div>
+                <dt>Skills learned</dt>
+                <dd>{{ log.skills_learned or "Not provided" }}</dd>
+              </div>
+              <div>
+                <dt>Challenges encountered</dt>
+                <dd>{{ log.challenges_encountered or "Not provided" }}</dd>
+              </div>
+              {% if log.supervisor_comment or log.supervisor_feedback %}
+                <div>
+                  <dt>Previous feedback</dt>
+                  <dd>{{ log.supervisor_comment or log.supervisor_feedback }}</dd>
+                </div>
+              {% endif %}
+            </dl>
+
+            {% if current_user.role == "supervisor" %}
+              <form
+                class="supervisor-log-review-form"
+                method="post"
+                action="{{ url_for('main.review_daily_log', student_id=profile.user_id, log_id=log.id) }}"
+              >
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <label for="supervisor-comment-{{ log.id }}">Feedback or revision instructions</label>
+                <textarea
+                  class="form-control form-textarea"
+                  id="supervisor-comment-{{ log.id }}"
+                  name="supervisor_comment"
+                  rows="3"
+                  maxlength="5000"
+                  placeholder="Add feedback for the student (optional)."
+                >{{ log.supervisor_comment or log.supervisor_feedback or "" }}</textarea>
+                <div class="supervisor-log-review-actions">
+                  <button class="button button-primary" type="submit" name="status" value="Approved">
+                    Approve
+                  </button>
+                  <button class="button button-danger" type="submit" name="status" value="Rejected">
+                    Reject / Request Revision
+                  </button>
+                </div>
+              </form>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <span class="empty-state-icon">L</span>
+        <h3>No daily logs yet</h3>
+        <p>This student has not submitted any daily log entries.</p>
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="workspace-section" id="weekly-reports" aria-labelledby="weekly-reports-heading">
+    <div class="section-title-row">
+      <div>
+        <p class="eyebrow">WEEKLY PROGRESS</p>
+        <h2 id="weekly-reports-heading">Weekly reports</h2>
+      </div>
+      <span class="logbook-count">{{ weekly_reports|length }} {{ "report" if weekly_reports|length == 1 else "reports" }}</span>
+    </div>
+
+    {% if weekly_reports %}
+      <div class="supervisor-student-list">
+        {% for report in weekly_reports %}
+          <article class="supervisor-student-card">
+            <header class="supervisor-student-header">
+              <div>
+                <p class="eyebrow">WEEK {{ report.week_start.isocalendar().week }}</p>
+                <h2>Week starting {{ report.week_start.strftime("%d %B %Y") }}</h2>
+                <p>Submitted {{ report.submitted_at.strftime("%d %b %Y") }}</p>
+              </div>
+              {% if report.status == "Approved" %}
+                <span class="weekly-report-status weekly-report-status-reviewed">Approved</span>
+              {% elif report.status == "Rejected" %}
+                <span class="logbook-status logbook-status-rejected">Rejected</span>
+              {% else %}
+                <span class="weekly-report-status weekly-report-status-pending">Pending review</span>
+              {% endif %}
+            </header>
+
+            <dl class="supervisor-student-details">
+              <div>
+                <dt>Summary of activities</dt>
+                <dd>{{ report.summary }}</dd>
+              </div>
+              <div>
+                <dt>Challenges encountered</dt>
+                <dd>{{ report.challenges_encountered or "Not provided" }}</dd>
+              </div>
+              <div>
+                <dt>Plans for next week</dt>
+                <dd>{{ report.plans_for_next_week or "Not provided" }}</dd>
+              </div>
+              {% if report.supervisor_comment or report.supervisor_feedback %}
+                <div>
+                  <dt>Previous feedback</dt>
+                  <dd>{{ report.supervisor_comment or report.supervisor_feedback }}</dd>
+                </div>
+              {% endif %}
+            </dl>
+
+            {% if current_user.role == "supervisor" %}
+              <form
+                class="supervisor-log-review-form"
+                method="post"
+                action="{{ url_for('main.review_weekly_report', student_id=profile.user_id, report_id=report.id) }}"
+              >
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <label for="weekly-report-comment-{{ report.id }}">Feedback or revision instructions</label>
+                <textarea
+                  class="form-control form-textarea"
+                  id="weekly-report-comment-{{ report.id }}"
+                  name="supervisor_comment"
+                  rows="3"
+                  maxlength="5000"
+                  placeholder="Add feedback for the student (optional)."
+                >{{ report.supervisor_comment or report.supervisor_feedback or "" }}</textarea>
+                <div class="supervisor-log-review-actions">
+                  <button class="button button-primary" type="submit" name="status" value="Approved">
+                    Approve
+                  </button>
+                  <button class="button button-danger" type="submit" name="status" value="Rejected">
+                    Reject / Request Revision
+                  </button>
+                </div>
+              </form>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <span class="empty-state-icon">W</span>
+        <h3>No weekly reports yet</h3>
+        <p>This student has not submitted any weekly reports.</p>
+      </div>
+    {% endif %}
+  </section>
+</section>
+{% endblock %}

@@ -33,6 +33,11 @@ Copy the printed value into `.env`. Keep `.env` private and out of version
 control. `DATABASE_URL` may remain empty to use the local SQLite database at
 `instance/siwes360.db`. For PostgreSQL, set it to a PostgreSQL SQLAlchemy URL.
 
+Assessment notification emails use Flask-Mail. Configure `MAIL_SERVER`,
+`MAIL_PORT`, `MAIL_USE_TLS` or `MAIL_USE_SSL`, `MAIL_USERNAME`, `MAIL_PASSWORD`,
+and `MAIL_DEFAULT_SENDER` in `.env` for your SMTP provider. If email delivery
+fails, the assessment is still saved and the failure is logged.
+
 ## Database migrations
 
 Create the initial migration once, then apply it:
@@ -52,6 +57,43 @@ flask --app run.py db upgrade
 
 Review generated migration scripts before applying them. Do not use
 `db.create_all()` to manage an evolving application schema.
+
+If an existing local database is behind the models, apply pending migrations
+to preserve its data:
+
+```powershell
+python -m flask --app run.py db upgrade
+```
+
+For a disposable local database only, the following app-context snippet drops
+and recreates the mapped tables. It refuses to run unless the configured
+database is the project's default SQLite file. This permanently deletes its
+data:
+
+```python
+from pathlib import Path
+
+from app import create_app
+from extensions import db
+
+app = create_app({"FLASK_CONFIG": "development"})
+with app.app_context():
+    expected_database = (Path(app.instance_path) / "siwes360.db").resolve()
+    configured_database = Path(db.engine.url.database).resolve()
+    if db.engine.dialect.name != "sqlite" or configured_database != expected_database:
+        raise RuntimeError("Refusing to reset a non-default local SQLite database.")
+
+    db.session.remove()
+    db.drop_all()
+    db.create_all()
+```
+
+After running the snippet, synchronize Alembic's version marker with the
+recreated schema:
+
+```powershell
+python -m flask --app run.py db stamp head
+```
 
 ## Run the application
 

@@ -14,8 +14,10 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 ROLE_DASHBOARDS = {
     "student": "main.student_dashboard",
+    "supervisor": "main.supervisor_dashboard",
     "industry_supervisor": "main.industry_supervisor_dashboard",
     "university_supervisor": "main.university_supervisor_dashboard",
+    "school_supervisor": "main.school_supervisor_dashboard",
     "admin": "main.admin_dashboard",
 }
 

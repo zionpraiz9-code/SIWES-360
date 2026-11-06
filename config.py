@@ -13,6 +13,21 @@ class Config:
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024
+    MAIL_SERVER = os.environ.get("MAIL_SERVER", "localhost")
+    MAIL_PORT = int(os.environ.get("MAIL_PORT", "25"))
+    MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+    MAIL_USE_SSL = os.environ.get("MAIL_USE_SSL", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+    MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
+    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+    MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER")
 
 
 class DevelopmentConfig(Config):

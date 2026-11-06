@@ -1,1 +1,199 @@
-{% extends "main/role_dashboard.html" %}
+{% extends "base.html" %}
+{% block title %}Super Admin Dashboard | SIWES360{% endblock %}
+{% block content %}
+<section class="admin-dashboard">
+  <header class="admin-dashboard-heading">
+    <p class="eyebrow">SIWES360 · SUPER ADMIN</p>
+    <h1>System overview</h1>
+    <p>Monitor accounts and manage student supervisor allocations.</p>
+  </header>
+
+  <section class="metric-grid admin-metric-grid" aria-label="System metrics">
+    <article class="metric-card admin-metric-card">
+      <div class="metric-card-top">
+        <span class="metric-icon" aria-hidden="true">U</span>
+        <span class="metric-label">TOTAL USERS</span>
+      </div>
+      <p class="metric-value">{{ total_users }}</p>
+      <p class="metric-note">Registered accounts</p>
+    </article>
+    <article class="metric-card admin-metric-card">
+      <div class="metric-card-top">
+        <span class="metric-icon" aria-hidden="true">S</span>
+        <span class="metric-label">STUDENTS</span>
+      </div>
+      <p class="metric-value">{{ total_students }}</p>
+      <p class="metric-note">{{ student_profiles|length }} student profiles</p>
+    </article>
+    <article class="metric-card admin-metric-card">
+      <div class="metric-card-top">
+        <span class="metric-icon" aria-hidden="true">P</span>
+        <span class="metric-label">SUPERVISORS</span>
+      </div>
+      <p class="metric-value">{{ total_supervisors }}</p>
+      <p class="metric-note">School and industrial supervisors</p>
+    </article>
+    <article class="metric-card admin-metric-card">
+      <div class="metric-card-top">
+        <span class="metric-icon" aria-hidden="true">A</span>
+        <span class="metric-label">STUDENTS WITH ASSIGNMENTS</span>
+      </div>
+      <p class="metric-value">{{ assigned_students }}</p>
+      <p class="metric-note">At least one supervisor assigned</p>
+    </article>
+  </section>
+
+  <section class="workspace-section" aria-labelledby="user-management-heading">
+    <div class="section-title-row">
+      <div>
+        <p class="eyebrow">ACCOUNT ACCESS</p>
+        <h2 id="user-management-heading">User management</h2>
+      </div>
+      <span class="logbook-count">
+        {{ users|length }} {{ "account" if users|length == 1 else "accounts" }}
+      </span>
+    </div>
+
+    {% if users %}
+      <div class="supervisor-table-wrap admin-table-wrap">
+        <table class="supervisor-table admin-table admin-users-table">
+          <thead>
+            <tr>
+              <th scope="col">User</th>
+              <th scope="col">Current role</th>
+              <th scope="col">Update role</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+              <tr>
+                <td data-label="User">
+                  <strong>{{ user.full_name }}</strong>
+                  <a href="mailto:{{ user.email }}">{{ user.email }}</a>
+                </td>
+                <td data-label="Current role">
+                  <span class="admin-role-badge admin-role-{{ user.role }}">
+                    {{ user.role.replace("_", " ")|title }}
+                  </span>
+                </td>
+                <td data-label="Update role">
+                  <form
+                    class="admin-role-form"
+                    method="post"
+                    action="{{ url_for('main.update_user_role', user_id=user.id) }}"
+                  >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <label class="sr-only" for="user-role-{{ user.id }}">
+                      Role for {{ user.full_name }}
+                    </label>
+                    <select class="form-control" id="user-role-{{ user.id }}" name="role" required>
+                      {% if user.role not in ("student", "supervisor", "school_supervisor", "admin") %}
+                        <option value="" selected disabled>
+                          Current role: {{ user.role.replace("_", " ")|title }}
+                        </option>
+                      {% endif %}
+                      <option value="student" {% if user.role == "student" %}selected{% endif %}>Student</option>
+                      <option value="supervisor" {% if user.role == "supervisor" %}selected{% endif %}>Industrial Supervisor</option>
+                      <option value="school_supervisor" {% if user.role == "school_supervisor" %}selected{% endif %}>School Supervisor</option>
+                      <option value="admin" {% if user.role == "admin" %}selected{% endif %}>Administrator</option>
+                    </select>
+                    <button class="button button-primary button-small" type="submit">
+                      Update role
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <span class="empty-state-icon">U</span>
+        <h3>No user accounts yet</h3>
+        <p>Registered accounts will appear here.</p>
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="workspace-section" aria-labelledby="student-allocations-heading">
+    <div class="section-title-row">
+      <div>
+        <p class="eyebrow">PLACEMENTS</p>
+        <h2 id="student-allocations-heading">Student supervisor allocations</h2>
+      </div>
+      <span class="logbook-count">
+        {{ student_profiles|length }}
+        {{ "student" if student_profiles|length == 1 else "students" }}
+      </span>
+    </div>
+
+    {% if student_profiles %}
+      <div class="supervisor-table-wrap admin-table-wrap">
+        <table class="supervisor-table admin-table">
+          <thead>
+            <tr>
+              <th scope="col">Student</th>
+              <th scope="col">Matric number</th>
+              <th scope="col">Department</th>
+              <th scope="col">Company</th>
+              <th scope="col">Supervisor assignments</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for profile in student_profiles %}
+              <tr>
+                <td data-label="Student">
+                  <strong>{{ profile.user.full_name }}</strong>
+                  <a href="mailto:{{ profile.user.email }}">{{ profile.user.email }}</a>
+                </td>
+                <td data-label="Matric number">{{ profile.matric_number or "Not provided" }}</td>
+                <td data-label="Department">{{ profile.department or "Not provided" }}</td>
+                <td data-label="Company">{{ profile.company_name or "Not provided" }}</td>
+                <td data-label="Supervisor assignments">
+                  <form
+                    class="admin-allocation-form"
+                    method="post"
+                    action="{{ url_for('main.allocate_supervisor', student_id=profile.user_id) }}"
+                  >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <label for="industrial-supervisor-{{ profile.user_id }}">Industrial supervisor email</label>
+                    <input
+                      class="form-control"
+                      id="industrial-supervisor-{{ profile.user_id }}"
+                      name="supervisor_email"
+                      type="email"
+                      maxlength="255"
+                      value="{{ profile.supervisor_email or '' }}"
+                      placeholder="industrial@example.com"
+                    >
+                    <label for="school-supervisor-{{ profile.user_id }}">School supervisor email</label>
+                    <input
+                      class="form-control"
+                      id="school-supervisor-{{ profile.user_id }}"
+                      name="school_supervisor_email"
+                      type="email"
+                      maxlength="120"
+                      value="{{ profile.school_supervisor_email or '' }}"
+                      placeholder="academic@example.com"
+                    >
+                    <button class="button button-primary button-small" type="submit">
+                      Save assignments
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <span class="empty-state-icon">S</span>
+        <h3>No student profiles yet</h3>
+        <p>Student profiles will appear here when students register.</p>
+      </div>
+    {% endif %}
+  </section>
+</section>
+{% endblock %}
