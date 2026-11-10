@@ -1,0 +1,284 @@
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+  --page-bg: #f8fafc;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-soft: #f1f5f9;
+  --navy: #172554;
+  --blue: #0891b2;
+  --blue-dark: #4f46e5;
+  --sky: #e0f2fe;
+  --ink: #1e293b;
+  --muted: #64748b;
+  --line: #dbe4ee;
+  --white: #ffffff;
+  --shadow: 0 18px 55px rgba(15, 23, 42, .09);
+  --theme-accent-glow: rgba(8, 145, 178, .18);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page-bg: #0b0f19;
+  --surface: #111827;
+  --surface-raised: #161f31;
+  --surface-soft: #1c2940;
+  --navy: #eef4ff;
+  --blue: #22d3ee;
+  --blue-dark: #a5b4fc;
+  --sky: rgba(34, 211, 238, .12);
+  --ink: #e5e7eb;
+  --muted: #a0aec0;
+  --line: rgba(148, 163, 184, .2);
+  --white: #111827;
+  --shadow: 0 18px 55px rgba(0, 0, 0, .28);
+  --theme-accent-glow: rgba(34, 211, 238, .2);
+}
+
+html,
+body {
+  background-color: var(--page-bg);
+  color: var(--ink);
+}
+
+body,
+body * {
+  transition:
+    background-color .22s ease,
+    border-color .22s ease,
+    color .22s ease,
+    box-shadow .22s ease;
+}
+
+body {
+  background-image:
+    radial-gradient(ellipse at 12% 0%, var(--theme-accent-glow), transparent 34%),
+    radial-gradient(ellipse at 92% 18%, rgba(79, 70, 229, .08), transparent 30%);
+}
+
+a { color: var(--blue-dark); }
+h1, h2, h3, h4 { color: var(--navy); }
+
+.navbar-glass.container {
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  box-shadow: 0 8px 30px rgba(15, 23, 42, .08);
+}
+
+.navbar-glass .brand,
+.navbar-glass .nav-links > a,
+.navbar-glass .nav-user {
+  color: var(--ink);
+}
+
+.navbar-glass .brand span,
+.navbar-glass .nav-links > a:hover {
+  color: var(--blue);
+}
+
+.navbar-glass .nav-links > a:focus-visible {
+  outline-color: var(--blue);
+}
+
+.button-primary {
+  background: linear-gradient(115deg, var(--blue-dark), var(--blue));
+  color: #ffffff;
+  box-shadow: 0 7px 20px var(--theme-accent-glow);
+}
+
+.button-primary:hover {
+  background: linear-gradient(115deg, var(--blue), var(--blue-dark));
+  color: #ffffff;
+}
+
+.button-outline {
+  border-color: var(--line);
+  background: var(--surface-raised);
+  color: var(--ink);
+}
+
+.hero-card,
+.form-card,
+.dashboard-card,
+.audience-card,
+.closing-section,
+.role-list span,
+.metric-card,
+.quick-action,
+.empty-state,
+.recent-log-date,
+.supervisor-table-wrap,
+.school-student-card,
+.school-score,
+.school-inspection-card,
+.school-inspection-nav a,
+.weekly-report-card,
+.weekly-report-feedback,
+.placement-date-card,
+.supervisor-student-card {
+  border-color: var(--line);
+  background-color: var(--surface);
+  color: var(--ink);
+}
+
+.glass-card,
+.hero-card,
+.form-card,
+.dashboard-card,
+.audience-card,
+.metric-card,
+.school-student-card,
+.supervisor-student-card,
+.weekly-report-card,
+.placement-date-card {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  box-shadow: var(--shadow);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  transition:
+    transform .24s ease,
+    border-color .24s ease,
+    box-shadow .24s ease,
+    background-color .24s ease;
+}
+
+.glass-card:hover,
+.hero-card:hover,
+.form-card:hover,
+.dashboard-card:hover,
+.audience-card:hover,
+.metric-card:hover,
+.school-student-card:hover,
+.supervisor-student-card:hover,
+.weekly-report-card:hover,
+.placement-date-card:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--blue) 46%, var(--line));
+  box-shadow: 0 20px 48px var(--theme-accent-glow);
+}
+
+.form-control {
+  border-color: var(--line);
+  background: var(--surface-raised);
+  color: var(--ink);
+}
+
+.form-control::placeholder { color: var(--muted); }
+.form-field label { color: var(--ink); }
+
+.supervisor-table-wrap {
+  border-color: var(--line);
+  background: var(--surface);
+}
+
+.supervisor-table th {
+  background: var(--surface-soft);
+  color: var(--muted);
+}
+
+.supervisor-table td {
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.admin-create-user-card {
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+}
+
+.theme-toggle {
+  display: inline-grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-raised);
+  color: var(--blue);
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.25rem;
+  line-height: 1;
+  transition:
+    transform .18s ease,
+    border-color .18s ease,
+    background-color .18s ease,
+    box-shadow .18s ease;
+}
+
+.theme-toggle:hover {
+  transform: translateY(-1px);
+  border-color: var(--blue);
+  box-shadow: 0 0 18px var(--theme-accent-glow);
+}
+
+.theme-toggle:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 3px;
+}
+
+.theme-toggle-icon { display: block; }
+
+:root[data-theme="dark"] .hero-card,
+:root[data-theme="dark"] .form-card,
+:root[data-theme="dark"] .dashboard-card,
+:root[data-theme="dark"] .audience-card,
+:root[data-theme="dark"] .closing-section,
+:root[data-theme="dark"] .role-list span,
+:root[data-theme="dark"] .metric-card,
+:root[data-theme="dark"] .quick-action,
+:root[data-theme="dark"] .empty-state,
+:root[data-theme="dark"] .recent-log-date,
+:root[data-theme="dark"] .supervisor-table-wrap,
+:root[data-theme="dark"] .school-student-card,
+:root[data-theme="dark"] .school-score,
+:root[data-theme="dark"] .school-inspection-card,
+:root[data-theme="dark"] .school-inspection-nav a,
+:root[data-theme="dark"] .weekly-report-card,
+:root[data-theme="dark"] .weekly-report-feedback,
+:root[data-theme="dark"] .placement-date-card,
+:root[data-theme="dark"] .supervisor-student-card {
+  background-color: var(--surface-raised);
+  box-shadow: var(--shadow);
+}
+
+:root[data-theme="dark"] .school-student-header,
+:root[data-theme="dark"] .supervisor-student-header,
+:root[data-theme="dark"] .supervisor-table td,
+:root[data-theme="dark"] .recent-log + .recent-log {
+  border-color: var(--line);
+}
+
+:root[data-theme="dark"] .supervisor-company,
+:root[data-theme="dark"] .school-student-label,
+:root[data-theme="dark"] .weekly-report-count,
+:root[data-theme="dark"] .status-pill,
+:root[data-theme="dark"] .card-icon,
+:root[data-theme="dark"] .empty-state-icon {
+  background: var(--surface-soft);
+  color: var(--blue);
+}
+
+:root[data-theme="dark"] .supervisor-table td:first-child strong,
+:root[data-theme="dark"] .recent-log-copy h3,
+:root[data-theme="dark"] .weekly-report-content h4 {
+  color: var(--ink);
+}
+
+:root[data-theme="dark"] .supervisor-progress {
+  background: var(--surface-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

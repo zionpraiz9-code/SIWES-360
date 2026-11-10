@@ -35,6 +35,22 @@ class ApplicationTests(unittest.TestCase):
             {"status": "ok", "application": "SIWES360"},
         )
 
+    def test_theme_toggle_and_assets_are_available_globally(self):
+        response = self.client.get("/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"data-theme-toggle", response.data)
+        self.assertIn(b"js/theme.js", response.data)
+        self.assertIn(b"css/theme.css", response.data)
+
+        theme_script = self.client.get("/static/js/theme.js")
+        theme_styles = self.client.get("/static/css/theme.css")
+        self.assertEqual(theme_script.status_code, 200)
+        self.assertIn(b"siwes360-theme", theme_script.data)
+        self.assertEqual(theme_styles.status_code, 200)
+        self.assertIn(b"#0b0f19", theme_styles.data)
+        self.assertIn(b".glass-card:hover", theme_styles.data)
+
     def test_student_profile_declares_all_required_fields(self):
         required_fields = {
             "matric_number",
@@ -305,6 +321,10 @@ class ApplicationTests(unittest.TestCase):
             b"SUPERVISORS",
             b"STUDENTS WITH ASSIGNMENTS",
             b"User management",
+            b"Create a user account",
+            b'name="username"',
+            b'name="email"',
+            b'name="password"',
             b"Admin Student",
             b"SIWES/2026/030",
             b"Current role",
@@ -330,6 +350,122 @@ class ApplicationTests(unittest.TestCase):
                 profile.school_supervisor_email,
                 "school@example.com",
             )
+
+    def test_admin_can_create_user_with_hashed_password_and_selected_role(self):
+        with self.app.app_context():
+            admin = User(
+                full_name="System Admin",
+                email="admin@example.com",
+                role="admin",
+            )
+            admin.set_password("StrongPass123")
+            db.session.add(admin)
+            db.session.commit()
+
+        self.client.post(
+            "/auth/login",
+            data={"email": "admin@example.com", "password": "StrongPass123"},
+        )
+        response = self.client.post(
+            "/admin/create-user",
+            data={
+                "username": "Industrial Supervisor",
+                "email": "SUPERVISOR@EXAMPLE.COM",
+                "password": "TemporaryPass123",
+                "role": "supervisor",
+            },
+            follow_redirects=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Account created for Industrial Supervisor.", response.data)
+        with self.app.app_context():
+            user = User.query.filter_by(email="supervisor@example.com").one()
+            self.assertEqual(user.full_name, "Industrial Supervisor")
+            self.assertEqual(user.role, "supervisor")
+            self.assertNotEqual(user.password_hash, "TemporaryPass123")
+            self.assertTrue(user.check_password("TemporaryPass123"))
+
+    def test_non_admin_cannot_create_users(self):
+        with self.app.app_context():
+            student = User(
+                full_name="Test Student",
+                email="student@example.com",
+                role="student",
+            )
+            student.set_password("StrongPass123")
+            db.session.add(student)
+            db.session.commit()
+
+        self.client.post(
+            "/auth/login",
+            data={"email": "student@example.com", "password": "StrongPass123"},
+        )
+        response = self.client.post(
+            "/admin/create-user",
+            data={
+                "username": "Injected Admin",
+                "email": "injected@example.com",
+                "password": "TemporaryPass123",
+                "role": "admin",
+            },
+        )
+
+        self.assertEqual(response.status_code, 403)
+        with self.app.app_context():
+            self.assertIsNone(User.query.filter_by(email="injected@example.com").first())
+
+    def test_anonymous_user_is_redirected_from_user_creation(self):
+        response = self.client.post("/admin/create-user")
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/auth/login", response.headers["Location"])
+
+    def test_admin_user_creation_rejects_duplicate_email_and_unlisted_role(self):
+        with self.app.app_context():
+            admin = User(
+                full_name="System Admin",
+                email="admin@example.com",
+                role="admin",
+            )
+            admin.set_password("StrongPass123")
+            existing = User(
+                full_name="Existing User",
+                email="taken@example.com",
+                role="student",
+            )
+            existing.set_password("StrongPass123")
+            db.session.add_all([admin, existing])
+            db.session.commit()
+
+        self.client.post(
+            "/auth/login",
+            data={"email": "admin@example.com", "password": "StrongPass123"},
+        )
+        duplicate_response = self.client.post(
+            "/admin/create-user",
+            data={
+                "username": "Duplicate User",
+                "email": "TAKEN@example.com",
+                "password": "TemporaryPass123",
+                "role": "student",
+            },
+        )
+        invalid_role_response = self.client.post(
+            "/admin/create-user",
+            data={
+                "username": "Invalid Role",
+                "email": "invalid-role@example.com",
+                "password": "TemporaryPass123",
+                "role": "industry_supervisor",
+            },
+        )
+
+        self.assertEqual(duplicate_response.status_code, 409)
+        self.assertIn(b"already exists", duplicate_response.data)
+        self.assertEqual(invalid_role_response.status_code, 400)
+        with self.app.app_context():
+            self.assertEqual(User.query.count(), 2)
 
     def test_admin_can_update_user_role_from_allowed_roles(self):
         with self.app.app_context():

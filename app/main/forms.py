@@ -4,6 +4,8 @@ from flask_wtf import FlaskForm
 from wtforms import (
     DateField,
     IntegerField,
+    PasswordField,
+    SelectField,
     StringField,
     SubmitField,
     TextAreaField,
@@ -134,3 +136,29 @@ class PlacementForm(FlaskForm):
             raise ValidationError(
                 "The placement end date must be on or after the start date."
             )
+
+
+class AdminCreateUserForm(FlaskForm):
+    username = StringField(
+        "Username",
+        validators=[DataRequired(), Length(min=2, max=120)],
+    )
+    email = StringField(
+        "Email address",
+        validators=[DataRequired(), Email(), Length(max=255)],
+    )
+    password = PasswordField(
+        "Temporary password",
+        validators=[DataRequired(), Length(min=8, max=128)],
+    )
+    role = SelectField(
+        "Role",
+        choices=[
+            ("supervisor", "Industrial Supervisor"),
+            ("school_supervisor", "School Supervisor"),
+            ("admin", "Super Admin"),
+            ("student", "Student"),
+        ],
+        validators=[DataRequired()],
+    )
+    submit = SubmitField("Create account")

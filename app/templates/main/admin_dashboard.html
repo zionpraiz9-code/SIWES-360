@@ -43,6 +43,46 @@
     </article>
   </section>
 
+  <section class="workspace-section admin-create-user-card" aria-labelledby="create-user-heading">
+    <div class="section-title-row">
+      <div>
+        <p class="eyebrow">PROVISION ACCESS</p>
+        <h2 id="create-user-heading">Create a user account</h2>
+        <p class="muted">Set up an account and assign its SIWES360 role.</p>
+      </div>
+    </div>
+    <form
+      class="admin-create-user-form"
+      method="post"
+      action="{{ url_for('main.admin_create_user') }}"
+    >
+      {{ form.hidden_tag() }}
+      <div class="admin-create-user-grid">
+        <div class="form-field">
+          {{ form.username.label }}
+          {{ form.username(class_="form-control", autocomplete="name", maxlength="120", placeholder="Full name") }}
+          {% for error in form.username.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="form-field">
+          {{ form.email.label }}
+          {{ form.email(class_="form-control", autocomplete="email", maxlength="255", placeholder="name@example.com") }}
+          {% for error in form.email.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="form-field">
+          {{ form.password.label }}
+          {{ form.password(class_="form-control", autocomplete="new-password", maxlength="128", placeholder="At least 8 characters") }}
+          {% for error in form.password.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="form-field">
+          {{ form.role.label }}
+          {{ form.role(class_="form-control") }}
+          {% for error in form.role.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+        </div>
+      </div>
+      {{ form.submit(class_="button button-primary") }}
+    </form>
+  </section>
+
   <section class="workspace-section" aria-labelledby="user-management-heading">
     <div class="section-title-row">
       <div>

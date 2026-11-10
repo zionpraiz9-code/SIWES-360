@@ -16,9 +16,15 @@ from flask import (
 from flask_mail import Message
 from flask_login import current_user, login_required
 from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 
 from app import mail
-from app.main.forms import DailyLogForm, PlacementForm, WeeklyReportForm
+from app.main.forms import (
+    AdminCreateUserForm,
+    DailyLogForm,
+    PlacementForm,
+    WeeklyReportForm,
+)
 from app.models import Attendance, DailyLog, StudentProfile, User, WeeklyReport
 from extensions import db
 
@@ -111,6 +117,25 @@ def student_dashboard():
             profile.start_date if profile else None
         ),
         today=today,
+    )
+
+
+@main_bp.route("/student/full-report")
+@login_required
+def student_full_report():
+    if current_user.role != "student":
+        abort(403)
+
+    profile = StudentProfile.query.filter_by(user_id=current_user.id).first()
+    logs = DailyLog.query.filter_by(user_id=current_user.id).order_by(
+        DailyLog.log_date.asc(),
+        DailyLog.id.asc(),
+    ).all()
+    return render_template(
+        "student/full_report.html",
+        profile=profile,
+        logs=logs,
+        generated_on=date.today(),
     )
 
 
@@ -769,9 +794,7 @@ def school_supervisor_inspect(student_id):
     ), 400 if inspection_error else 200
 
 
-@main_bp.route("/admin/dashboard")
-@roles_required("admin")
-def admin_dashboard():
+def _render_admin_dashboard(form=None):
     users = User.query.order_by(User.full_name, User.id).all()
     student_profiles = (
         StudentProfile.query.join(User)
@@ -787,6 +810,7 @@ def admin_dashboard():
     }
     return render_template(
         "main/admin_dashboard.html",
+        form=form if form is not None else AdminCreateUserForm(),
         users=users,
         student_profiles=student_profiles,
         total_users=len(users),
@@ -797,6 +821,47 @@ def admin_dashboard():
             for profile in student_profiles
         ),
     )
+
+
+@main_bp.route("/admin/dashboard")
+@roles_required("admin")
+def admin_dashboard():
+    return _render_admin_dashboard()
+
+
+@main_bp.route("/admin/create-user", methods=["POST"])
+@login_required
+def admin_create_user():
+    if current_user.role != "admin":
+        abort(403)
+
+    form = AdminCreateUserForm()
+    if not form.validate_on_submit():
+        return _render_admin_dashboard(form), 400
+
+    email = form.email.data.strip().lower()
+    if User.query.filter(func.lower(User.email) == email).first():
+        form.email.errors.append("An account with this email already exists.")
+        return _render_admin_dashboard(form), 409
+
+    new_user = User(
+        full_name=form.username.data.strip(),
+        email=email,
+        role=form.role.data,
+    )
+    new_user.set_password(form.password.data)
+    db.session.add(new_user)
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        if User.query.filter(func.lower(User.email) == email).first():
+            form.email.errors.append("An account with this email already exists.")
+            return _render_admin_dashboard(form), 409
+        raise
+
+    flash(f"Account created for {new_user.full_name}.", "success")
+    return redirect(url_for("main.admin_dashboard"))
 
 
 @main_bp.route("/admin/update-role/<int:user_id>", methods=["POST"])

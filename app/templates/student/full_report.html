@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Full Training Report | SIWES360{% endblock %}
+{% block content %}
+<style>
+  .full-report-page { max-width: 900px; margin: 0 auto; color: var(--ink); }
+  .report-actions { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 24px; }
+  .report-document { padding: clamp(24px, 5vw, 56px); border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); }
+  .report-document-header { padding-bottom: 24px; border-bottom: 2px solid var(--navy); text-align: center; }
+  .report-document-header .eyebrow { margin-bottom: 7px; }
+  .report-document-header h1 { margin-bottom: 7px; font-size: clamp(1.7rem, 4vw, 2.4rem); letter-spacing: .01em; text-transform: uppercase; }
+  .report-document-header p:last-child { margin-bottom: 0; color: var(--muted); }
+  .report-section { margin-top: 30px; break-inside: avoid; }
+  .report-section h2 { margin: 0 0 14px; padding-bottom: 7px; border-bottom: 1px solid var(--line); color: var(--navy); font-size: 1.12rem; letter-spacing: .04em; text-transform: uppercase; }
+  .report-details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px 24px; margin: 0; }
+  .report-details div { min-width: 0; }
+  .report-details dt { margin-bottom: 3px; color: var(--muted); font-size: .73rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+  .report-details dd { margin: 0; overflow-wrap: anywhere; }
+  .report-log-list { display: grid; gap: 18px; }
+  .report-log { padding: 18px; border: 1px solid var(--line); border-radius: 8px; break-inside: avoid; }
+  .report-log-header { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+  .report-log-header h3 { margin: 0; color: var(--navy); font-size: 1rem; }
+  .report-log-date { flex: 0 0 auto; color: var(--muted); font-size: .85rem; font-weight: 700; }
+  .report-log dl { display: grid; gap: 10px; margin: 0; }
+  .report-log dt { margin-bottom: 2px; color: var(--muted); font-size: .72rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+  .report-log dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .report-log-status { display: inline-block; padding: 3px 9px; border-radius: 20px; background: var(--sky); color: var(--blue-dark); font-size: .75rem; font-weight: 700; }
+  .report-empty { padding: 22px; border: 1px dashed var(--line); border-radius: 8px; color: var(--muted); text-align: center; }
+  .report-document-footer { margin-top: 34px; padding-top: 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: .78rem; text-align: center; }
+  @media (max-width: 600px) {
+    .report-details { grid-template-columns: 1fr; }
+    .report-actions { align-items: stretch; flex-direction: column; }
+    .report-actions .button { width: 100%; }
+    .report-log-header { flex-direction: column; gap: 3px; }
+  }
+  @media print {
+    @page { size: A4; margin: 18mm 16mm; }
+    html, body { background: #fff !important; color: #172033 !important; }
+    body { display: block; font-size: 10pt; line-height: 1.45; }
+    .site-header, .site-footer, .flash-list, .report-actions, .back-link { display: none !important; }
+    .container, .page-content, .full-report-page { width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
+    .report-document { padding: 0 !important; border: 0 !important; border-radius: 0 !important; background: #fff !important; box-shadow: none !important; }
+    .report-document-header { border-color: #172033; }
+    .report-document-header h1, .report-section h2, .report-log-header h3 { color: #172033 !important; }
+    .report-section { margin-top: 20px; }
+    .report-log { padding: 12px; border-color: #cbd5e1; background: #fff !important; }
+    .report-log-status { border: 1px solid #cbd5e1; background: #f1f5f9 !important; color: #172033 !important; }
+    .report-section, .report-log { break-inside: avoid-page; }
+    a { color: inherit !important; text-decoration: none !important; }
+  }
+</style>
+
+<section class="full-report-page">
+  <div class="report-actions">
+    <a class="button button-outline back-link" href="{{ url_for('main.student_dashboard') }}">← Back to dashboard</a>
+    <button class="button button-primary" type="button" onclick="window.print()">Save as PDF / Print Report</button>
+  </div>
+
+  <article class="report-document">
+    <header class="report-document-header">
+      <p class="eyebrow">SIWES360 · STUDENT RECORD</p>
+      <h1>Industrial Training Report</h1>
+      <p>Complete placement profile and submitted daily logbook activities</p>
+    </header>
+
+    <section class="report-section" aria-labelledby="student-details-heading">
+      <h2 id="student-details-heading">Student and institutional details</h2>
+      <dl class="report-details">
+        <div><dt>Student name</dt><dd>{{ current_user.full_name }}</dd></div>
+        <div><dt>Email address</dt><dd>{{ current_user.email }}</dd></div>
+        <div><dt>Matriculation number</dt><dd>{{ profile.matric_number if profile and profile.matric_number else "Not provided" }}</dd></div>
+        <div><dt>Department</dt><dd>{{ profile.department if profile and profile.department else "Not provided" }}</dd></div>
+      </dl>
+    </section>
+
+    <section class="report-section" aria-labelledby="placement-details-heading">
+      <h2 id="placement-details-heading">Placement details</h2>
+      <dl class="report-details">
+        <div><dt>Organization</dt><dd>{{ profile.company_name if profile and profile.company_name else "Not provided" }}</dd></div>
+        <div><dt>Organization address</dt><dd>{{ profile.company_address if profile and profile.company_address else "Not provided" }}</dd></div>
+        <div><dt>Industrial supervisor</dt><dd>{{ profile.supervisor_name if profile and profile.supervisor_name else "Not provided" }}</dd></div>
+        <div><dt>Supervisor email</dt><dd>{{ profile.supervisor_email if profile and profile.supervisor_email else "Not provided" }}</dd></div>
+        <div><dt>Supervisor phone</dt><dd>{{ profile.supervisor_phone if profile and profile.supervisor_phone else "Not provided" }}</dd></div>
+        <div><dt>Placement period</dt><dd>{% if profile and profile.start_date %}{{ profile.start_date.strftime("%d %B %Y") }}{% else %}Not provided{% endif %} – {% if profile and profile.end_date %}{{ profile.end_date.strftime("%d %B %Y") }}{% else %}Not provided{% endif %}</dd></div>
+        <div><dt>School supervisor email</dt><dd>{{ profile.school_supervisor_email if profile and profile.school_supervisor_email else "Not provided" }}</dd></div>
+      </dl>
+    </section>
+
+    <section class="report-section" aria-labelledby="logbook-heading">
+      <h2 id="logbook-heading">Submitted logbook activities <span>({{ logs|length }})</span></h2>
+      {% if logs %}
+        <div class="report-log-list">
+          {% for log in logs %}
+            <article class="report-log">
+              <header class="report-log-header">
+                <h3>{{ loop.index }}. {{ log.title }}</h3>
+                <time class="report-log-date" datetime="{{ log.log_date.isoformat() }}">{{ log.log_date.strftime("%A, %d %B %Y") }}</time>
+              </header>
+              <dl>
+                <div><dt>Activities and work completed</dt><dd>{{ log.activities }}</dd></div>
+                {% if log.tools_used %}<div><dt>Tools and technologies</dt><dd>{{ log.tools_used }}</dd></div>{% endif %}
+                {% if log.skills_learned %}<div><dt>Skills learned</dt><dd>{{ log.skills_learned }}</dd></div>{% endif %}
+                {% if log.challenges_encountered %}<div><dt>Challenges encountered</dt><dd>{{ log.challenges_encountered }}</dd></div>{% endif %}
+                <div><dt>Review status</dt><dd><span class="report-log-status">{{ log.status }}</span></dd></div>
+                {% if log.supervisor_comment or log.supervisor_feedback %}
+                  <div><dt>Supervisor feedback</dt><dd>{{ log.supervisor_feedback or log.supervisor_comment }}</dd></div>
+                {% endif %}
+              </dl>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="report-empty">No daily log entries have been submitted yet.</p>
+      {% endif %}
+    </section>
+
+    <footer class="report-document-footer">
+      Generated from the SIWES360 student record on {{ generated_on.strftime("%d %B %Y") }}.
+    </footer>
+  </article>
+</section>
+{% endblock %}

@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="SIWES360 industrial training management">
   <title>{% block title %}SIWES360{% endblock %}</title>
+  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
 </head>
 <body>
   <header class="site-header sticky-top">
@@ -34,6 +36,16 @@
           <a href="{{ url_for('auth.login') }}">Log in</a>
           <a class="button button-primary button-small" href="{{ url_for('auth.register') }}">Get started</a>
         {% endif %}
+        <button
+          class="theme-toggle"
+          type="button"
+          data-theme-toggle
+          aria-label="Switch to dark mode"
+          aria-pressed="false"
+          title="Switch to dark mode"
+        >
+          <span class="theme-toggle-icon" data-theme-icon aria-hidden="true">☾</span>
+        </button>
       </div>
     </nav>
   </header>

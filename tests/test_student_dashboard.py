@@ -96,6 +96,100 @@ class StudentDashboardTests(unittest.TestCase):
         self.assertIn(b"Mark attendance", response.data)
         self.assertIn(b"Submit weekly report", response.data)
 
+    def test_full_report_includes_profile_and_chronological_logs_only_for_student(self):
+        with self.app.app_context():
+            db.session.add(
+                StudentProfile(
+                    user_id=self.user_id,
+                    matric_number="SIWES/2026/010",
+                    department="Computer Science",
+                    company_name="Example Engineering Ltd",
+                    company_address="12 Training Road, Lagos",
+                    supervisor_name="Ada Supervisor",
+                    supervisor_email="ada@example.com",
+                    supervisor_phone="+234 800 000 0000",
+                    school_supervisor_email="school@example.com",
+                    start_date=date(2026, 1, 5),
+                    end_date=date(2026, 4, 5),
+                )
+            )
+            other_student = User(
+                full_name="Other Student",
+                email="other@example.com",
+                role="student",
+            )
+            other_student.set_password("StrongPass123")
+            db.session.add(other_student)
+            db.session.flush()
+            db.session.add_all(
+                [
+                    DailyLog(
+                        user_id=self.user_id,
+                        log_date=date(2026, 2, 2),
+                        title="Second Activity",
+                        activities="Completed a scheduled equipment inspection.",
+                        tools_used="Inspection checklist",
+                        skills_learned="Equipment inspection",
+                        challenges_encountered="Limited access to the workshop.",
+                        supervisor_feedback="Well documented.",
+                    ),
+                    DailyLog(
+                        user_id=self.user_id,
+                        log_date=date(2026, 1, 12),
+                        title="First Activity",
+                        activities="Completed workplace orientation.",
+                    ),
+                    DailyLog(
+                        user_id=other_student.id,
+                        log_date=date(2026, 1, 10),
+                        title="Private Other Activity",
+                        activities="This entry belongs to another student.",
+                    ),
+                ]
+            )
+            db.session.commit()
+
+        response = self.client.get("/student/full-report")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Industrial Training Report", response.data)
+        self.assertIn(b"SIWES/2026/010", response.data)
+        self.assertIn(b"Example Engineering Ltd", response.data)
+        self.assertIn(b"Inspection checklist", response.data)
+        self.assertIn(b"Save as PDF / Print Report", response.data)
+        self.assertIn(b"window.print()", response.data)
+        self.assertNotIn(b"Private Other Activity", response.data)
+        self.assertLess(
+            response.data.index(b"First Activity"),
+            response.data.index(b"Second Activity"),
+        )
+        self.assertIn(b"@media print", response.data)
+        self.assertIn(b".site-header", response.data)
+
+    def test_full_report_requires_login_and_student_role(self):
+        self.client.post("/auth/logout")
+        anonymous_response = self.client.get("/student/full-report")
+        self.assertEqual(anonymous_response.status_code, 302)
+        self.assertIn("/auth/login", anonymous_response.headers["Location"])
+
+        with self.app.app_context():
+            admin = User(
+                full_name="System Admin",
+                email="admin@example.com",
+                role="admin",
+            )
+            admin.set_password("StrongPass123")
+            db.session.add(admin)
+            db.session.commit()
+
+        self.client.post(
+            "/auth/login",
+            data={"email": "admin@example.com", "password": "StrongPass123"},
+        )
+        response = self.client.get("/student/full-report")
+
+        self.assertEqual(response.status_code, 403)
+
     def test_student_actions_persist_records_and_allow_attendance_updates(self):
         today = date.today()
         log_response = self.client.post(
