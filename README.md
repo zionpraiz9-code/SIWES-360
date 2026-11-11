@@ -1,19 +1,28 @@
 # SIWES360
 
-SIWES360 is a Flask application for coordinating student industrial training
-records. This repository currently contains the project foundation and an
-initial role-aware authentication workflow; logbooks, placements, attendance,
-reports, evaluations, notifications, and their supervisor workflows are not
-implemented yet.
+SIWES360 is a Flask web application for managing student industrial training
+placements, activity logs, attendance, weekly reports, and supervisor reviews.
+
+## Features
+
+- Student registration, login/logout, and password changes.
+- Role-specific dashboards for students, supervisors, university supervisors,
+  school supervisors, industry supervisors, and administrators.
+- Student placement details, daily logbooks, attendance, and weekly reports.
+- Supervisor review of student daily logs and weekly reports.
+- School supervisor review of student records and academic assessment, with
+  optional email notification.
+- Administrator account creation, role updates, and supervisor allocation.
+- SQLAlchemy persistence with versioned Flask-Migrate/Alembic migrations.
 
 ## Requirements
 
 - Python 3.10 or newer
-- PowerShell on Windows
+- PowerShell on Windows (commands below use PowerShell syntax)
 
-## Set up on Windows
+## Installation
 
-From the repository directory:
+Run these commands from the repository root:
 
 ```powershell
 py -m venv .venv
@@ -23,148 +32,113 @@ pip install -r requirements.txt
 Copy-Item .env.example .env
 ```
 
-Replace `SECRET_KEY` in `.env` with a locally generated value. For example:
+Set a unique `SECRET_KEY` in `.env`. Generate one locally with:
 
 ```powershell
 python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
-Copy the printed value into `.env`. Keep `.env` private and out of version
-control. `DATABASE_URL` may remain empty to use the local SQLite database at
-`instance/siwes360.db`. For PostgreSQL, set it to a PostgreSQL SQLAlchemy URL.
+Keep `.env` private and never commit real credentials. The example file contains
+all application environment variables and safe local-development defaults.
 
-Assessment notification emails use Flask-Mail. Configure `MAIL_SERVER`,
-`MAIL_PORT`, `MAIL_USE_TLS` or `MAIL_USE_SSL`, `MAIL_USERNAME`, `MAIL_PASSWORD`,
-and `MAIL_DEFAULT_SENDER` in `.env` for your SMTP provider. If email delivery
-fails, the assessment is still saved and the failure is logged.
+## Environment variables
 
-## Database migrations
+`run.py` loads variables from `.env`. The same variables can be set directly in
+the process environment.
 
-Create the initial migration once, then apply it:
+| Variable | Default | Description |
+| --- | --- | --- |
+| `FLASK_CONFIG` | `development` | Configuration profile: `development`, `testing`, or `production`. |
+| `SECRET_KEY` | `dev-secret-key` | Flask session and CSRF signing key. Set a strong, random value outside local development. |
+| `DATABASE_URL` | Empty (uses `sqlite:///siwes360.db`) | SQLAlchemy database URL. The default database is stored at `instance/siwes360.db`. Leave empty to use SQLite. |
+| `SESSION_COOKIE_SECURE` | `false` | Enables the `Secure` session-cookie flag when set to `1`, `true`, or `yes`. The production profile always enables it; use production behind HTTPS. |
+| `MAIL_SERVER` | `localhost` | SMTP server hostname for assessment email notifications. |
+| `MAIL_PORT` | `25` | SMTP server port. |
+| `MAIL_USE_TLS` | `false` | Enables SMTP STARTTLS when set to `1`, `true`, or `yes`. |
+| `MAIL_USE_SSL` | `false` | Enables SMTP SSL when set to `1`, `true`, or `yes`. Configure TLS or SSL according to your provider. |
+| `MAIL_USERNAME` | Empty | SMTP account username, if required. |
+| `MAIL_PASSWORD` | Empty | SMTP account password, if required. Store it only in a private environment or `.env` file. |
+| `MAIL_DEFAULT_SENDER` | Empty | Sender address for outgoing assessment notifications. |
+
+Email is optional. Configure the `MAIL_*` values for your SMTP provider to send
+assessment notifications. An email failure is logged and shown as a warning;
+the assessment itself remains saved.
+
+## Database
+
+The repository already includes migration history. After installation and
+configuration, apply pending migrations (this also prepares a fresh database):
 
 ```powershell
-flask --app run.py db init
-flask --app run.py db migrate -m "Initial schema"
 flask --app run.py db upgrade
 ```
 
-After changing SQLAlchemy models, generate and apply a new migration:
+After changing SQLAlchemy models, create and review a migration, then apply it:
 
 ```powershell
 flask --app run.py db migrate -m "Describe the schema change"
 flask --app run.py db upgrade
 ```
 
-Review generated migration scripts before applying them. Do not use
-`db.create_all()` to manage an evolving application schema.
+Do not run `db init` on this repository or use `db.create_all()` to manage an
+evolving schema. Back up important database data before applying migrations.
 
-If an existing local database is behind the models, apply pending migrations
-to preserve its data:
-
-```powershell
-python -m flask --app run.py db upgrade
-```
-
-For a disposable local database only, the following app-context snippet drops
-and recreates the mapped tables. It refuses to run unless the configured
-database is the project's default SQLite file. This permanently deletes its
-data:
-
-```python
-from pathlib import Path
-
-from app import create_app
-from extensions import db
-
-app = create_app({"FLASK_CONFIG": "development"})
-with app.app_context():
-    expected_database = (Path(app.instance_path) / "siwes360.db").resolve()
-    configured_database = Path(db.engine.url.database).resolve()
-    if db.engine.dialect.name != "sqlite" or configured_database != expected_database:
-        raise RuntimeError("Refusing to reset a non-default local SQLite database.")
-
-    db.session.remove()
-    db.drop_all()
-    db.create_all()
-```
-
-After running the snippet, synchronize Alembic's version marker with the
-recreated schema:
-
-```powershell
-python -m flask --app run.py db stamp head
-```
-
-## Run the application
+## Run
 
 ```powershell
 flask --app run.py run
 ```
 
-Open `http://127.0.0.1:5000/`. The health endpoint is
-`http://127.0.0.1:5000/health` and returns a small JSON status response.
+Open `http://127.0.0.1:5000/`. The health check at
+`http://127.0.0.1:5000/health` returns a JSON status response.
 
-The current bootstrap command can create a privileged account from a trusted
-local terminal; do not expose administrative account creation publicly:
+Create a privileged account from a trusted terminal when needed:
 
 ```powershell
 flask --app run.py create-user
 ```
 
+The command prompts for a name, email, supported role, and password. Do not
+expose privileged account provisioning as a public service.
+
 ## Tests
+
+Run the test suite with:
 
 ```powershell
 python -m pytest
 ```
 
-The tests use an isolated in-memory SQLite database and do not use the local
+Tests use an isolated in-memory SQLite database and do not use the local
 development database.
 
-## Initial architecture and data model
-
-The Flask application factory in `app/__init__.py` configures extensions,
-registers blueprints, and installs command-line operations. Shared extension
-instances live in `extensions.py`; configuration profiles live in `config.py`.
-The `User` table currently stores a unique email, a password hash, a supported
-role, and account activity status. Public registration always creates a student
-account; privileged roles are provisioned through the trusted CLI.
-
-Initial entity relationship:
+## Project layout
 
 ```text
-User
- ├── id (primary key)
- ├── full_name
- ├── email (unique)
- ├── password_hash
- ├── role
- └── is_active
+app/
+  auth/          Registration, login, and password-management routes/forms
+  main/          SIWES workflows, dashboards, and forms
+  static/        CSS, JavaScript, and static error page
+  templates/     Jinja templates
+config.py        Application configuration profiles
+extensions.py    Shared Flask extension instances
+migrations/      Alembic migration configuration and history
+tests/           Application and workflow tests
+run.py           Dotenv loading and Flask application entry point
 ```
 
-The placement, logbook, weekly report, attendance, skill, evaluation,
-supervision visit, notification, and audit entities described in the project
-specification remain future implementation work. They should be related to
-users with explicit foreign keys and authorization checks when added.
+The application factory and CLI commands are in `app/__init__.py`. The
+supported account roles are `student`, `supervisor`, `industry_supervisor`,
+`university_supervisor`, `school_supervisor`, and `admin`.
 
-## Security notes
+## Security and deployment
 
-- Set a strong, private `SECRET_KEY` before running outside a local development
-  environment.
-- Production configuration disables debug mode and requires secure session
-  cookies over HTTPS.
-- Passwords are stored using Werkzeug password hashing.
-- Flask-WTF CSRF protection is enabled outside the isolated test setup.
-- The application does not include a default administrator password.
-
-## Current implementation status
-
-Implemented: Flask application factory, development/testing/production
-configuration, SQLAlchemy and migration integration, public landing page,
-health endpoint, student registration, login/logout, password hashing,
-authenticated password changes, role-specific placeholder dashboards, and an
-initial authentication test suite.
-
-Not yet implemented: placement assignment, logbook and report lifecycles,
-attendance and skills management, supervisor reviews and visits, evaluations,
-notifications, analytics, administrative workflows, and full defence/deployment
-documentation. Dashboard pages are not evidence that these workflows exist.
+- Replace the development `SECRET_KEY` with a long, unique secret.
+- Use `FLASK_CONFIG=production` in production. It disables debug mode and
+  requires secure session cookies; serve the app over HTTPS.
+- Keep `.env`, SMTP credentials, and production database credentials out of
+  version control.
+- Provision administrator and supervisor accounts only through trusted
+  administrative channels.
+- Use a production WSGI server and follow your hosting provider's guidance;
+  Flask's built-in development server is for local development only.
