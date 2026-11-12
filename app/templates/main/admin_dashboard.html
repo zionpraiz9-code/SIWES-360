@@ -102,6 +102,7 @@
               <th scope="col">User</th>
               <th scope="col">Current role</th>
               <th scope="col">Update role</th>
+              <th scope="col">Delete account</th>
             </tr>
           </thead>
           <tbody>
@@ -139,6 +140,18 @@
                     </select>
                     <button class="button button-primary button-small" type="submit">
                       Update role
+                    </button>
+                  </form>
+                </td>
+                <td data-label="Delete account">
+                  <form
+                    method="post"
+                    action="{{ url_for('main.admin_delete_user', user_id=user.id) }}"
+                    onsubmit="return confirm('Delete this account and its SIWES records? This action cannot be undone.');"
+                  >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="button button-danger button-small" type="submit">
+                      Delete
                     </button>
                   </form>
                 </td>

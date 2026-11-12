@@ -882,6 +882,30 @@ def update_user_role(user_id):
     return redirect(url_for("main.admin_dashboard"))
 
 
+@main_bp.route("/admin/delete-user/<int:user_id>", methods=["POST"])
+@login_required
+def admin_delete_user(user_id):
+    if current_user.role != "admin":
+        abort(403)
+
+    user = db.session.get(User, user_id)
+    if user is None:
+        abort(404)
+    if user.id == current_user.id:
+        flash("You cannot delete your own administrator account.", "danger")
+        return redirect(url_for("main.admin_dashboard"))
+
+    deleted_name = user.full_name
+    DailyLog.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+    Attendance.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+    WeeklyReport.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+    db.session.delete(user)
+    db.session.commit()
+
+    flash(f"Account for {deleted_name} and its SIWES records were deleted.", "success")
+    return redirect(url_for("main.admin_dashboard"))
+
+
 @main_bp.route(
     "/admin/allocate-supervisor/<int:student_id>",
     methods=["POST"],

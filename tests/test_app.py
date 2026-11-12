@@ -3,7 +3,7 @@ from datetime import date, datetime
 from unittest.mock import patch
 
 from app import create_app
-from app.models import DailyLog, StudentProfile, User, WeeklyReport
+from app.models import Attendance, DailyLog, StudentProfile, User, WeeklyReport
 from extensions import db
 
 
@@ -328,6 +328,8 @@ class ApplicationTests(unittest.TestCase):
             b"Admin Student",
             b"SIWES/2026/030",
             b"Current role",
+            b"Delete account",
+            b"Delete this account and its SIWES records?",
             b'name="role"',
             b'name="supervisor_email"',
             b'name="school_supervisor_email"',
@@ -498,6 +500,116 @@ class ApplicationTests(unittest.TestCase):
         with self.app.app_context():
             user = db.session.get(User, student_id)
             self.assertEqual(user.role, "school_supervisor")
+
+    def test_admin_can_delete_user_and_their_siwes_records(self):
+        with self.app.app_context():
+            admin = User(
+                full_name="System Admin",
+                email="admin@example.com",
+                role="admin",
+            )
+            admin.set_password("StrongPass123")
+            student = User(
+                full_name="Delete Student",
+                email="delete-student@example.com",
+                role="student",
+            )
+            student.set_password("StrongPass123")
+            db.session.add_all([admin, student])
+            db.session.flush()
+            db.session.add_all(
+                [
+                    StudentProfile(user_id=student.id),
+                    DailyLog(
+                        user_id=student.id,
+                        title="Training activity",
+                        activities="Completed a training task.",
+                    ),
+                    Attendance(
+                        user_id=student.id,
+                        attendance_date=date(2026, 1, 5),
+                        status="present",
+                    ),
+                    WeeklyReport(
+                        user_id=student.id,
+                        week_start=date(2026, 1, 5),
+                        summary="Completed the week's tasks.",
+                    ),
+                ]
+            )
+            db.session.commit()
+            student_id = student.id
+
+        self.client.post(
+            "/auth/login",
+            data={"email": "admin@example.com", "password": "StrongPass123"},
+        )
+        response = self.client.post(f"/admin/delete-user/{student_id}")
+
+        self.assertEqual(response.status_code, 302)
+        with self.app.app_context():
+            self.assertIsNone(db.session.get(User, student_id))
+            self.assertEqual(DailyLog.query.filter_by(user_id=student_id).count(), 0)
+            self.assertEqual(Attendance.query.filter_by(user_id=student_id).count(), 0)
+            self.assertEqual(WeeklyReport.query.filter_by(user_id=student_id).count(), 0)
+            self.assertEqual(
+                StudentProfile.query.filter_by(user_id=student_id).count(),
+                0,
+            )
+
+    def test_admin_cannot_delete_their_own_account(self):
+        with self.app.app_context():
+            admin = User(
+                full_name="System Admin",
+                email="admin@example.com",
+                role="admin",
+            )
+            admin.set_password("StrongPass123")
+            db.session.add(admin)
+            db.session.commit()
+            admin_id = admin.id
+
+        self.client.post(
+            "/auth/login",
+            data={"email": "admin@example.com", "password": "StrongPass123"},
+        )
+        response = self.client.post(
+            f"/admin/delete-user/{admin_id}",
+            follow_redirects=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"You cannot delete your own administrator account.", response.data)
+        with self.app.app_context():
+            self.assertIsNotNone(db.session.get(User, admin_id))
+
+    def test_non_admin_cannot_delete_users(self):
+        with self.app.app_context():
+            student = User(
+                full_name="Test Student",
+                email="student@example.com",
+                role="student",
+            )
+            student.set_password("StrongPass123")
+            target = User(
+                full_name="Delete Target",
+                email="target@example.com",
+                role="student",
+            )
+            target.set_password("StrongPass123")
+            db.session.add_all([student, target])
+            db.session.commit()
+            target_id = target.id
+
+        self.client.post(
+            "/auth/login",
+            data={"email": "student@example.com", "password": "StrongPass123"},
+        )
+        response = self.client.post(f"/admin/delete-user/{target_id}")
+
+        self.assertEqual(response.status_code, 403)
+        with self.app.app_context():
+            self.assertIsNotNone(db.session.get(User, target_id))
 
     def test_admin_role_update_rejects_role_outside_allowed_list(self):
         with self.app.app_context():
