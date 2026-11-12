@@ -3,6 +3,8 @@
 SIWES360 is a Flask web application for managing student industrial training
 placements, activity logs, attendance, weekly reports, and supervisor reviews.
 
+**Live website:** [siwes360.pythonanywhere.com](https://siwes360.pythonanywhere.com/)
+
 ## Features
 
 - Student registration, login/logout, and password changes.
@@ -140,5 +142,32 @@ supported account roles are `student`, `supervisor`, `industry_supervisor`,
   version control.
 - Provision administrator and supervisor accounts only through trusted
   administrative channels.
-- Use a production WSGI server and follow your hosting provider's guidance;
-  Flask's built-in development server is for local development only.
+- Flask's built-in development server is for local development only.
+
+### Deploying to PythonAnywhere
+
+The production site is hosted at
+[siwes360.pythonanywhere.com](https://siwes360.pythonanywhere.com/). To deploy
+an update from GitHub, pull the intended branch in a PythonAnywhere Bash
+console, activate the web app's virtual environment, install any updated
+requirements, and apply pending migrations:
+
+```bash
+git pull origin main
+pip install -r requirements.txt
+flask --app run.py db upgrade
+```
+
+In the PythonAnywhere **Web** tab, confirm the source-code and virtual
+environment paths, and set the WSGI configuration to import the Flask
+application from this project, for example:
+
+```python
+from run import app as application
+```
+
+Set `FLASK_CONFIG=production`, a unique `SECRET_KEY`, and a persistent
+`DATABASE_URL` in the web app's environment. Keep these values private. Reload
+the web app from the **Web** tab after updating code or configuration. Pushing
+to GitHub alone does not update the running site unless automatic deployment
+has separately been configured.
